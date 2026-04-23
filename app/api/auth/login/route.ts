@@ -1,33 +1,27 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
-const AUTH_COOKIE = "esnaf_auth";
+import { createClient } from "@/lib/supabase/server"
 
 type LoginBody = {
-  email?: string;
-  password?: string;
-};
+  email?: string
+  password?: string
+}
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as LoginBody;
-  const email = body.email?.trim();
-  const password = body.password?.trim();
+  const body = (await request.json()) as LoginBody
+  const email = body.email?.trim()
+  const password = body.password?.trim()
 
   if (!email || !password) {
-    return NextResponse.json(
-      { message: "Mail ve sifre alanlari zorunludur." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "E-posta ve şifre alanları zorunludur." }, { status: 400 })
   }
 
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set({
-    name: AUTH_COOKIE,
-    value: "ok",
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 14,
-  });
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-  return response;
+  if (error) {
+    return NextResponse.json({ message: "Giriş başarısız: E-posta veya şifre hatalı." }, { status: 401 })
+  }
+
+  return NextResponse.json({ ok: true, message: "Giriş başarılı." })
 }

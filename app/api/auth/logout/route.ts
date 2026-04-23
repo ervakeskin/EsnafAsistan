@@ -1,16 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
-const AUTH_COOKIE = "esnaf_auth";
+import { createClient } from "@/lib/supabase/server"
 
 export async function POST() {
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set({
-    name: AUTH_COOKIE,
-    value: "",
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
-  });
-  return response;
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signOut()
+
+  if (error) {
+    return NextResponse.json({ message: `Çıkış yapılamadı: ${error.message}` }, { status: 400 })
+  }
+
+  return NextResponse.json({ ok: true, message: "Çıkış başarılı." })
 }

@@ -19,16 +19,21 @@ type StokPageProps = {
   searchParams?: Promise<{ depo?: string }>
 }
 
+type Warehouse = {
+  id: string
+  name: string
+  is_active: boolean
+}
+
 type Product = {
   id: string
   name: string
   quantity: number
   unit: string
   purchase_price: number
-  warehouse: string
+  warehouse_id: string | null
+  warehouses: { name: string }[] | null
 }
-
-const warehouseOptions = ["Dukkan", "Ana Depo", "Arac"] as const
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("tr-TR", {
@@ -40,31 +45,47 @@ function formatPrice(value: number) {
 
 export default async function StokPage({ searchParams }: StokPageProps) {
   const resolvedSearchParams = (await searchParams) ?? {}
-  const selectedWarehouse = warehouseOptions.includes(
-    resolvedSearchParams.depo as (typeof warehouseOptions)[number],
-  )
-    ? (resolvedSearchParams.depo as (typeof warehouseOptions)[number])
-    : "Ana Depo"
 
   const supabase = await createClient()
-  const { data, error } = await supabase
+  const { data: warehouseData, error: warehouseError } = await supabase
+    .from("warehouses")
+    .select("id, name, is_active")
+    .eq("is_active", true)
+    .order("name", { ascending: true })
+
+  if (warehouseError) {
+    throw new Error(`Depo listesi yüklenemedi: ${warehouseError.message}`)
+  }
+
+  const warehouses = (warehouseData ?? []) as Warehouse[]
+  const selectedWarehouseId =
+    warehouses.find((warehouse) => warehouse.id === resolvedSearchParams.depo)?.id ?? warehouses[0]?.id ?? null
+
+  let query = supabase
     .from("products")
-    .select("id, name, quantity, unit, purchase_price, warehouse")
-    .eq("warehouse", selectedWarehouse)
+    .select("id, name, quantity, unit, purchase_price, warehouse_id, warehouses(name)")
     .order("created_at", { ascending: false })
 
+  if (selectedWarehouseId) {
+    query = query.eq("warehouse_id", selectedWarehouseId)
+  }
+
+  const { data, error } = await query
+
   if (error) {
-    throw new Error(`Stok listesi yuklenemedi: ${error.message}`)
+    throw new Error(`Stok listesi yüklenemedi: ${error.message}`)
   }
 
   const products = (data ?? []) as Product[]
+  const selectedWarehouseLabel =
+    warehouses.find((warehouse) => warehouse.id === selectedWarehouseId)?.name ?? "Depo bulunamadı"
 
   return (
     <section className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-slate-900">Mallar & Depolar</h1>
+        <h1 className="text-3xl font-semibold text-slate-900">Mallar ve Depolar</h1>
         <p className="text-base text-slate-600">
-          Alis fiyatlarini net gor, depoya gore filtrele ve urunleri tek yerden yonet.
+          Alış fiyatlarını net gör, depoya göre filtrele ve ürünleri tek yerden yönet.
         </p>
       </div>
 
@@ -73,30 +94,37 @@ export default async function StokPage({ searchParams }: StokPageProps) {
           <div className="space-y-1">
             <CardTitle className="text-xl">Stok Listesi</CardTitle>
             <p className="text-base text-muted-foreground">
-              Aktif filtre: <span className="font-semibold">{selectedWarehouse}</span>
+              Aktif filtre: <span className="font-semibold">{selectedWarehouseLabel}</span>
             </p>
           </div>
-          <AddProductDialog action={createProductAction} />
+          <AddProductDialog
+            action={createProductAction}
+            warehouses={warehouses.map((warehouse) => ({ id: warehouse.id, name: warehouse.name }))}
+            defaultWarehouseId={selectedWarehouseId}
+          />
         </CardHeader>
         <CardContent className="space-y-5">
-          <WarehouseFilter value={selectedWarehouse} />
+          <WarehouseFilter
+            value={selectedWarehouseId ?? ""}
+            options={warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.name }))}
+          />
 
           <Table className="text-base">
             <TableHeader>
               <TableRow>
-                <TableHead className="text-base">Urun</TableHead>
+                <TableHead className="text-base">Ürün</TableHead>
                 <TableHead className="text-base">Miktar</TableHead>
                 <TableHead className="text-base">Birim</TableHead>
                 <TableHead className="text-base">Depo Konumu</TableHead>
-                <TableHead className="text-base">Alis Fiyati</TableHead>
-                <TableHead className="text-right text-base">Islem</TableHead>
+                <TableHead className="text-base">Alış Fiyatı</TableHead>
+                <TableHead className="text-right text-base">İşlem</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="py-8 text-center text-base text-slate-500">
-                    Bu depoda henuz urun yok.
+                    Bu depoda henüz ürün yok.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -105,7 +133,7 @@ export default async function StokPage({ searchParams }: StokPageProps) {
                     <TableCell className="text-base font-semibold">{product.name}</TableCell>
                     <TableCell className="text-base">{product.quantity}</TableCell>
                     <TableCell className="text-base">{product.unit}</TableCell>
-                    <TableCell className="text-base">{product.warehouse}</TableCell>
+                    <TableCell className="text-base">{product.warehouses?.[0]?.name ?? "Depo yok"}</TableCell>
                     <TableCell className="text-base font-semibold text-slate-900">
                       {formatPrice(Number(product.purchase_price))}
                     </TableCell>

@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils"
 const menuItems = [
   {
     href: "/dashboard",
-    label: "Dukkan Ozeti",
+    label: "Dükkan Özeti",
     icon: LayoutDashboard,
   },
   {
@@ -87,7 +87,7 @@ export function DashboardSidebar() {
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             EsnafAsistan
           </p>
-          <h2 className="text-2xl font-semibold">Yonetim Paneli</h2>
+          <h2 className="text-2xl font-semibold">Yönetim Paneli</h2>
         </div>
 
         <SidebarLinks />
@@ -101,7 +101,7 @@ export function DashboardSidebar() {
           onClick={handleLogout}
         >
           <LogOut className="size-5" />
-          Cikis Yap
+          Çıkış Yap
         </Button>
       </aside>
 
@@ -110,7 +110,7 @@ export function DashboardSidebar() {
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
             EsnafAsistan
           </p>
-          <p className="text-lg font-semibold">Yonetim Paneli</p>
+          <p className="text-lg font-semibold">Yönetim Paneli</p>
         </div>
 
         <Sheet>
@@ -123,7 +123,7 @@ export function DashboardSidebar() {
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 EsnafAsistan
               </p>
-              <h3 className="text-xl font-semibold">Menuler</h3>
+              <h3 className="text-xl font-semibold">Menüler</h3>
             </div>
 
             <SidebarLinks />
@@ -135,7 +135,7 @@ export function DashboardSidebar() {
               onClick={handleLogout}
             >
               <LogOut className="size-5" />
-              Cikis Yap
+              Çıkış Yap
             </Button>
           </SheetContent>
         </Sheet>

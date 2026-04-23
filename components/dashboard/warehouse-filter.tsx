@@ -12,15 +12,10 @@ import {
 
 type WarehouseFilterProps = {
   value: string
+  options: Array<{ value: string; label: string }>
 }
 
-const options = [
-  { value: "Dukkan", label: "Dukkan" },
-  { value: "Ana Depo", label: "Ana Depo" },
-  { value: "Arac", label: "Arac" },
-]
-
-export function WarehouseFilter({ value }: WarehouseFilterProps) {
+export function WarehouseFilter({ value, options }: WarehouseFilterProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()

@@ -40,16 +40,16 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
         render={
           <Button type="button" size="lg" className="h-11 text-base">
             <DollarSign className="size-5" />
-            Satis Yap
+            Satış Yap
           </Button>
         }
       />
 
       <DialogContent className="max-w-xl p-0">
         <DialogHeader className="px-6 pt-6">
-          <DialogTitle className="text-xl">{product.name} Satisi</DialogTitle>
+          <DialogTitle className="text-xl">{product.name} Satışı</DialogTitle>
           <DialogDescription className="text-base">
-            Alis fiyati sadece bilgi icin gorunur. Satis fiyatini su anki duruma gore manuel gir.
+            Alış fiyatı sadece bilgi için görünür. Satış fiyatını şu anki duruma göre manuel gir.
           </DialogDescription>
         </DialogHeader>
 
@@ -57,7 +57,7 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
           <input type="hidden" name="product_id" value={product.id} />
 
           <div className="rounded-lg border bg-slate-50 p-4">
-            <p className="text-sm text-slate-600">Alis Fiyati (Bilgi)</p>
+            <p className="text-sm text-slate-600">Alış Fiyatı (Bilgi)</p>
             <p className="text-2xl font-semibold text-slate-900">
               {formatPrice(product.purchasePrice)}
             </p>
@@ -69,7 +69,7 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor={`sale_price-${product.id}`} className="text-base">
-                Satis Fiyati (TL)
+                Satış Fiyatı (TL)
               </Label>
               <Input
                 id={`sale_price-${product.id}`}
@@ -86,7 +86,7 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
 
             <div className="space-y-2">
               <Label htmlFor={`quantity-${product.id}`} className="text-base">
-                Satis Miktari
+                Satış Miktarı
               </Label>
               <Input
                 id={`quantity-${product.id}`}
@@ -103,13 +103,13 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor={`customer_name-${product.id}`} className="text-base">
-              Musteri Adi / Firma
+              Müşteri Adı / Firma
             </Label>
             <Input
               id={`customer_name-${product.id}`}
               name="customer_name"
               className="h-12 text-base"
-              placeholder="Orn: Yilmaz Insaat"
+              placeholder="Örn: Yılmaz İnşaat"
             />
           </div>
 
@@ -121,12 +121,12 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
               id={`note-${product.id}`}
               name="note"
               className="h-12 text-base"
-              placeholder="Orn: Pesin odendi"
+              placeholder="Örn: Peşin ödendi"
             />
           </div>
 
           <Button size="lg" className="h-12 w-full text-base">
-            Satisi Kaydet
+            Satışı Kaydet
           </Button>
         </form>
       </DialogContent>

@@ -23,9 +23,11 @@ import {
 
 type AddProductDialogProps = {
   action: (formData: FormData) => Promise<void>
+  warehouses: Array<{ id: string; name: string }>
+  defaultWarehouseId: string | null
 }
 
-export function AddProductDialog({ action }: AddProductDialogProps) {
+export function AddProductDialog({ action, warehouses, defaultWarehouseId }: AddProductDialogProps) {
   return (
     <Dialog>
       <DialogTrigger
@@ -34,28 +36,28 @@ export function AddProductDialog({ action }: AddProductDialogProps) {
         }
       >
         <PlusCircle className="size-5" />
-        Yeni Urun Ekle
+        Yeni Ürün Ekle
       </DialogTrigger>
 
       <DialogContent className="max-w-xl p-0">
         <DialogHeader className="px-6 pt-6">
-          <DialogTitle className="text-xl">Yeni Urun Kaydi</DialogTitle>
+          <DialogTitle className="text-xl">Yeni Ürün Kaydı</DialogTitle>
           <DialogDescription className="text-base">
-            Urunu depoya eklemek icin bilgileri doldur.
+            Ürünü depoya eklemek için bilgileri doldur.
           </DialogDescription>
         </DialogHeader>
 
         <form action={action} className="space-y-4 px-6 pb-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-base">
-              Urun Adi
+              Ürün Adı
             </Label>
             <Input
               id="name"
               name="name"
               required
               className="h-12 text-base"
-              placeholder="Orn: 1/2 Kure Vana"
+              placeholder="Örn: 1/2 Küre Vana"
             />
           </div>
 
@@ -91,7 +93,7 @@ export function AddProductDialog({ action }: AddProductDialogProps) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="purchase_price" className="text-base">
-                Alis Fiyati (TL)
+                Alış Fiyatı (TL)
               </Label>
               <Input
                 id="purchase_price"
@@ -105,30 +107,29 @@ export function AddProductDialog({ action }: AddProductDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="warehouse" className="text-base">
+              <Label htmlFor="warehouse_id" className="text-base">
                 Depo Konumu
               </Label>
-              <Select name="warehouse" defaultValue="Ana Depo">
-                <SelectTrigger id="warehouse" className="h-12 w-full text-base">
+              <Select name="warehouse_id" defaultValue={defaultWarehouseId ?? undefined}>
+                <SelectTrigger id="warehouse_id" className="h-12 w-full text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Dukkan" className="text-base">
-                    Dukkan
-                  </SelectItem>
-                  <SelectItem value="Ana Depo" className="text-base">
-                    Ana Depo
-                  </SelectItem>
-                  <SelectItem value="Arac" className="text-base">
-                    Arac
-                  </SelectItem>
+                  {warehouses.map((warehouse) => (
+                    <SelectItem key={warehouse.id} value={warehouse.id} className="text-base">
+                      {warehouse.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {warehouses.length === 0 ? (
+                <p className="text-sm text-red-600">Önce Ayarlar sayfasından aktif depo ekleyin.</p>
+              ) : null}
             </div>
           </div>
 
-          <Button size="lg" className="h-12 w-full text-base">
-            Urunu Kaydet
+          <Button size="lg" className="h-12 w-full text-base" disabled={warehouses.length === 0}>
+            Ürünü Kaydet
           </Button>
         </form>
       </DialogContent>

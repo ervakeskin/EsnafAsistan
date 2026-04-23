@@ -52,7 +52,7 @@ function getTodayRangeInIstanbul() {
   const month = Number(parts.find((part) => part.type === "month")?.value)
   const day = Number(parts.find((part) => part.type === "day")?.value)
 
-  // Turkiye saat dilimi UTC+3 sabittir; bu nedenle gun baslangicini UTC'ye ceviriyoruz.
+  // Türkiye saat dilimi UTC+3 sabittir; bu nedenle gün başlangıcını UTC'ye çeviriyoruz.
   const startUtc = new Date(Date.UTC(year, month - 1, day, -3, 0, 0, 0))
   const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000)
 
@@ -74,7 +74,7 @@ export default async function KasaPage() {
     .order("sold_at", { ascending: false })
 
   if (error) {
-    throw new Error(`Kasa verisi yuklenemedi: ${error.message}`)
+    throw new Error(`Kasa verisi yüklenemedi: ${error.message}`)
   }
 
   const sales = (data ?? []) as SaleRow[]
@@ -90,45 +90,45 @@ export default async function KasaPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold text-slate-900">Kasa</h1>
         <p className="text-base text-slate-600">
-          Satis fiyatini manuel gir, sistem stok dusumunu ve kar hesabini otomatik yapsin.
+          Satış fiyatını manuel gir, sistem stok düşümünü ve kâr hesabını otomatik yapsın.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bugun Kasaya Giren</CardTitle>
+            <CardTitle className="text-base text-slate-600">Bugün Kasaya Giren</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-4xl font-bold tracking-tight text-slate-900">{formatPrice(todayRevenue)}</p>
-            <p className="mt-2 text-sm text-muted-foreground">Toplam {sales.length} satis islemi</p>
+            <p className="mt-2 text-sm text-muted-foreground">Toplam {sales.length} satış işlemi</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bugun Cepte Kalan</CardTitle>
+            <CardTitle className="text-base text-slate-600">Bugün Cepte Kalan</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-4xl font-bold tracking-tight text-emerald-700">{formatPrice(todayProfit)}</p>
-            <p className="mt-2 text-sm text-muted-foreground">(Satis - Alis) x Miktar formulu ile hesaplanir</p>
+            <p className="mt-2 text-sm text-muted-foreground">(Satış - Alış) x Miktar formülü ile hesaplanır</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Bugunku Satis Hareketleri</CardTitle>
+          <CardTitle className="text-xl">Bugünkü Satış Hareketleri</CardTitle>
         </CardHeader>
         <CardContent>
           <Table className="text-base">
             <TableHeader>
               <TableRow>
                 <TableHead className="text-base">Saat</TableHead>
-                <TableHead className="text-base">Urun</TableHead>
-                <TableHead className="text-base">Musteri</TableHead>
+                <TableHead className="text-base">Ürün</TableHead>
+                <TableHead className="text-base">Müşteri</TableHead>
                 <TableHead className="text-base">Miktar</TableHead>
-                <TableHead className="text-base">Satis</TableHead>
+                <TableHead className="text-base">Satış</TableHead>
                 <TableHead className="text-base">Cepte Kalan</TableHead>
               </TableRow>
             </TableHeader>
@@ -136,7 +136,7 @@ export default async function KasaPage() {
               {sales.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="py-8 text-center text-base text-slate-500">
-                    Bugun henuz satis kaydi yok.
+                    Bugün henüz satış kaydı yok.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -149,7 +149,7 @@ export default async function KasaPage() {
                     <TableRow key={sale.id}>
                       <TableCell className="text-base">{formatDateTime(sale.sold_at)}</TableCell>
                       <TableCell className="text-base font-semibold">
-                        {productInfo?.name ?? "Silinmis Urun"}
+                        {productInfo?.name ?? "Silinmiş Ürün"}
                       </TableCell>
                       <TableCell className="text-base">
                         {sale.customer_name?.trim() ? sale.customer_name : "-"}

@@ -15,7 +15,7 @@ export default function DashboardLayout({
           <div className="mb-5 flex items-center justify-end">
             <Button variant="outline" size="lg" className="h-11 text-base">
               <Sparkles className="size-4" />
-              Yardim / AI Onerisi
+              Yardım / AI Önerisi
             </Button>
           </div>
           {children}

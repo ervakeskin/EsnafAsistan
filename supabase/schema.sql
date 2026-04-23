@@ -12,6 +12,42 @@ create table if not exists public.products (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.warehouses (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+insert into public.warehouses (name)
+values
+  ('Dükkan'),
+  ('Ana Depo'),
+  ('Araç')
+on conflict (name) do nothing;
+
+alter table public.products add column if not exists warehouse_id uuid references public.warehouses(id);
+alter table public.products drop constraint if exists products_warehouse_check;
+
+update public.products p
+set warehouse_id = w.id
+from public.warehouses w
+where p.warehouse_id is null
+  and (
+    (p.warehouse = 'Dukkan' and w.name = 'Dükkan')
+    or (p.warehouse = 'Araç' and w.name = 'Araç')
+    or (p.warehouse = 'Arac' and w.name = 'Araç')
+    or (p.warehouse = 'Ana Depo' and w.name = 'Ana Depo')
+  );
+
+update public.products p
+set warehouse_id = w.id
+from public.warehouses w
+where p.warehouse_id is null
+  and w.name = 'Ana Depo';
+
+create index if not exists idx_products_warehouse_id on public.products(warehouse_id);
+
 create table if not exists public.sales (
   id uuid primary key default gen_random_uuid(),
   product_id uuid not null references public.products(id) on delete restrict,

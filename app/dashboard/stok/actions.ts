@@ -4,55 +4,69 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 
-const validWarehouses = ["Dukkan", "Ana Depo", "Arac"] as const
-
 export async function createProductAction(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim()
   const quantity = Number(formData.get("quantity") ?? 0)
   const unit = String(formData.get("unit") ?? "").trim()
   const purchasePrice = Number(formData.get("purchase_price") ?? 0)
-  const warehouse = String(formData.get("warehouse") ?? "Ana Depo").trim()
+  const warehouseId = String(formData.get("warehouse_id") ?? "").trim()
 
   if (!name || !unit) {
-    throw new Error("Urun adi ve birim zorunludur.")
+    throw new Error("Ürün adı ve birim zorunludur.")
   }
 
   if (quantity < 0 || purchasePrice <= 0) {
-    throw new Error("Miktar veya alis fiyati gecersiz.")
+    throw new Error("Miktar veya alış fiyatı geçersiz.")
   }
 
-  if (!validWarehouses.includes(warehouse as (typeof validWarehouses)[number])) {
-    throw new Error("Depo konumu gecersiz.")
+  if (!warehouseId) {
+    throw new Error("Depo seçimi zorunludur.")
   }
 
   const supabase = await createClient()
+
+  const { data: selectedWarehouse, error: warehouseError } = await supabase
+    .from("warehouses")
+    .select("id, name, is_active")
+    .eq("id", warehouseId)
+    .single()
+
+  if (warehouseError || !selectedWarehouse) {
+    throw new Error("Seçilen depo bulunamadı.")
+  }
+
+  if (!selectedWarehouse.is_active) {
+    throw new Error("Pasif depoya ürün eklenemez.")
+  }
 
   const { error } = await supabase.from("products").insert({
     name,
     quantity,
     unit,
     purchase_price: purchasePrice,
-    warehouse,
+    warehouse: selectedWarehouse.name,
+    warehouse_id: selectedWarehouse.id,
   })
 
   if (error) {
-    throw new Error(`Urun eklenemedi: ${error.message}`)
+    throw new Error(`Ürün eklenemedi: ${error.message}`)
   }
 
   revalidatePath("/dashboard/stok")
+  revalidatePath("/dashboard/ayarlar")
 }
 
 export async function deleteProductAction(formData: FormData) {
   const id = String(formData.get("id") ?? "").trim()
   if (!id) {
-    throw new Error("Silinecek urun bilgisi bulunamadi.")
+    throw new Error("Silinecek ürün bilgisi bulunamadı.")
   }
 
   const supabase = await createClient()
   const { error } = await supabase.from("products").delete().eq("id", id)
 
   if (error) {
-    throw new Error(`Urun silinemedi: ${error.message}`)
+    throw new Error(`Ürün silinemedi: ${error.message}`)
   }
 
   revalidatePath("/dashboard/stok")
@@ -68,23 +82,23 @@ export async function createSaleAction(formData: FormData) {
   const note = String(formData.get("note") ?? "").trim()
 
   if (!productId) {
-    throw new Error("Satis icin urun secimi bulunamadi.")
+    throw new Error("Satış için ürün seçimi bulunamadı.")
   }
 
   if (!rawQuantity) {
-    throw new Error("Satis miktari bos birakilamaz.")
+    throw new Error("Satış miktarı boş bırakılamaz.")
   }
 
   if (!Number.isInteger(quantity) || quantity <= 0) {
-    throw new Error("Satis miktari 1 veya daha buyuk bir tam sayi olmali.")
+    throw new Error("Satış miktarı 1 veya daha büyük bir tam sayı olmalı.")
   }
 
   if (!rawSalePrice) {
-    throw new Error("Satis fiyati bos birakilamaz.")
+    throw new Error("Satış fiyatı boş bırakılamaz.")
   }
 
   if (!Number.isFinite(salePrice) || salePrice <= 0) {
-    throw new Error("Satis fiyati sifirdan buyuk olmali.")
+    throw new Error("Satış fiyatı sıfırdan büyük olmalı.")
   }
 
   const supabase = await createClient()
@@ -96,7 +110,7 @@ export async function createSaleAction(formData: FormData) {
     .single()
 
   if (productError || !product) {
-    throw new Error(`Urun bilgisi okunamadi: ${productError?.message ?? "Kayit bulunamadi."}`)
+    throw new Error(`Ürün bilgisi okunamadı: ${productError?.message ?? "Kayıt bulunamadı."}`)
   }
 
   const currentQuantity = Number(product.quantity)
@@ -104,7 +118,7 @@ export async function createSaleAction(formData: FormData) {
 
   if (currentQuantity < quantity) {
     throw new Error(
-      `Stok yetersiz. Stokta ${currentQuantity} urun var, ${quantity} adet satis yapilamaz.`,
+      `Stok yetersiz. Stokta ${currentQuantity} ürün var, ${quantity} adet satış yapılamaz.`,
     )
   }
 
@@ -119,11 +133,11 @@ export async function createSaleAction(formData: FormData) {
     .maybeSingle()
 
   if (stockUpdateError) {
-    throw new Error(`Stok guncellenemedi: ${stockUpdateError.message}`)
+    throw new Error(`Stok güncellenemedi: ${stockUpdateError.message}`)
   }
 
   if (!updatedStockRow) {
-    throw new Error("Stok degisti. Lutfen sayfayi yenileyip tekrar deneyin.")
+    throw new Error("Stok değişti. Lütfen sayfayı yenileyip tekrar deneyin.")
   }
 
   const { error: saleInsertError } = await supabase.from("sales").insert({
@@ -137,7 +151,7 @@ export async function createSaleAction(formData: FormData) {
 
   if (saleInsertError) {
     await supabase.from("products").update({ quantity: currentQuantity }).eq("id", productId)
-    throw new Error(`Satis kaydi olusturulamadi: ${saleInsertError.message}`)
+    throw new Error(`Satış kaydı oluşturulamadı: ${saleInsertError.message}`)
   }
 
   revalidatePath("/dashboard/stok")

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "EsnafAsistan",
-  description: "Su tesisat malzemeleri dukkan yonetim paneli",
+  description: "Su tesisat malzemeleri dükkan yönetim paneli",
 };
 
 export default function RootLayout({

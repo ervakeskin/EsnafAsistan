@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -22,10 +23,15 @@ export default function LoginPage() {
     event.preventDefault()
     setErrorMessage("")
 
+    if (password !== confirmPassword) {
+      setErrorMessage("Şifre tekrarı eşleşmiyor.")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,14 +63,14 @@ export default function LoginPage() {
           <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600">
             EsnafAsistan
           </p>
-          <h1 className="text-4xl font-semibold text-slate-900">Dükkanını tek panelden yönet.</h1>
-          <p className="text-lg text-slate-600">Sipariş, stok, teslimat ve kasa takibini sade bir panelle anında gör.</p>
+          <h1 className="text-4xl font-semibold text-slate-900">Yeni hesap aç, panelini hemen kullan.</h1>
+          <p className="text-lg text-slate-600">E-posta ve şifre ile kayıt ol, ardından doğrudan dükkan paneline geç.</p>
         </section>
 
         <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
           <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl">Giriş Yap</CardTitle>
-            <p className="text-base text-muted-foreground">E-posta ve şifrenle paneline güvenli şekilde gir.</p>
+            <CardTitle className="text-2xl">Kayıt Ol</CardTitle>
+            <p className="text-base text-muted-foreground">Yeni bir hesap oluşturarak EsnafAsistan&apos;ı kullanmaya başla.</p>
           </CardHeader>
 
           <CardContent className="space-y-5">
@@ -105,6 +111,24 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password" className="text-base">
+                  Şifre Tekrar
+                </Label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3 top-3.5 size-5 text-slate-400" />
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    placeholder="********"
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    className="h-12 pl-11 text-base"
+                  />
+                </div>
+              </div>
+
               {errorMessage ? (
                 <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {errorMessage}
@@ -115,18 +139,18 @@ export default function LoginPage() {
                 {isLoading ? (
                   <>
                     <LoaderCircle className="size-4 animate-spin" />
-                    Giriş yapılıyor
+                    Kayıt oluşturuluyor
                   </>
                 ) : (
-                  "Panele Giriş Yap"
+                  "Hesap Oluştur"
                 )}
               </Button>
             </form>
 
             <div className="text-center text-base text-slate-600">
-              Hesabın yok mu?{" "}
-              <Link href="/kayit-ol" className="font-semibold text-slate-900 underline underline-offset-4">
-                Kayıt Ol
+              Zaten hesabın var mı?{" "}
+              <Link href="/" className="font-semibold text-slate-900 underline underline-offset-4">
+                Giriş Yap
               </Link>
             </div>
           </CardContent>

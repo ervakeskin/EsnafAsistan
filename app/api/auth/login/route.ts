@@ -7,6 +7,24 @@ type LoginBody = {
   password?: string
 }
 
+function mapAuthErrorToTurkish(message: string) {
+  const normalized = message.toLowerCase()
+
+  if (normalized.includes("invalid login credentials")) {
+    return "Şifre yanlış veya e-posta adresi sistemde bulunamadı."
+  }
+
+  if (normalized.includes("email not confirmed")) {
+    return "E-posta adresini doğrulamadığın için giriş yapamazsın."
+  }
+
+  if (normalized.includes("invalid email")) {
+    return "E-posta formatı geçersiz."
+  }
+
+  return "Giriş sırasında bir hata oluştu. Lütfen tekrar dene."
+}
+
 export async function POST(request: Request) {
   const body = (await request.json()) as LoginBody
   const email = body.email?.trim()
@@ -20,7 +38,7 @@ export async function POST(request: Request) {
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    return NextResponse.json({ message: "Giriş başarısız: E-posta veya şifre hatalı." }, { status: 401 })
+    return NextResponse.json({ message: mapAuthErrorToTurkish(error.message) }, { status: 401 })
   }
 
   return NextResponse.json({ ok: true, message: "Giriş başarılı." })

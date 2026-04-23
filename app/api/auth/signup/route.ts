@@ -7,6 +7,24 @@ type SignupBody = {
   password?: string
 }
 
+function mapSignupErrorToTurkish(message: string) {
+  const normalized = message.toLowerCase()
+
+  if (normalized.includes("user already registered")) {
+    return "Bu e-posta adresiyle zaten bir hesap var."
+  }
+
+  if (normalized.includes("password should be at least")) {
+    return "Şifre en az 6 karakter olmalıdır."
+  }
+
+  if (normalized.includes("invalid email")) {
+    return "E-posta formatı geçersiz."
+  }
+
+  return "Kayıt sırasında bir hata oluştu. Lütfen tekrar dene."
+}
+
 export async function POST(request: Request) {
   const body = (await request.json()) as SignupBody
   const email = body.email?.trim()
@@ -24,7 +42,7 @@ export async function POST(request: Request) {
   const { error } = await supabase.auth.signUp({ email, password })
 
   if (error) {
-    return NextResponse.json({ message: `Kayıt başarısız: ${error.message}` }, { status: 400 })
+    return NextResponse.json({ message: mapSignupErrorToTurkish(error.message) }, { status: 400 })
   }
 
   return NextResponse.json({

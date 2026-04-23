@@ -1,7 +1,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 function getEnvValue(value: string | undefined, key: string) {
   if (!value) {
@@ -11,8 +11,8 @@ function getEnvValue(value: string | undefined, key: string) {
 }
 
 export function createClient() {
-  const url = getEnvValue(supabaseUrl, "EXPO_PUBLIC_SUPABASE_URL")
-  const anonKey = getEnvValue(supabaseAnonKey, "EXPO_PUBLIC_SUPABASE_ANON_KEY")
+  const url = getEnvValue(supabaseUrl, "NEXT_PUBLIC_SUPABASE_URL")
+  const anonKey = getEnvValue(supabaseAnonKey, "NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
   return createSupabaseClient(url, anonKey, {
     auth: {

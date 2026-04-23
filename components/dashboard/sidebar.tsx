@@ -25,7 +25,7 @@ const menuItems = [
   },
   {
     href: "/dashboard/stok",
-    label: "Mallar & Depolar",
+    label: "Mallar ve Depolar",
     icon: Boxes,
   },
   {

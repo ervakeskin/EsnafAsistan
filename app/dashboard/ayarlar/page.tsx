@@ -55,7 +55,7 @@ export default async function AyarlarPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Mail Entegrasyon Altyapısı</CardTitle>
+          <CardTitle className="text-xl">E-posta Entegrasyon Altyapısı</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <form action={createLinkedEmailAction} className="space-y-3">
@@ -68,7 +68,7 @@ export default async function AyarlarPage() {
                 type="email"
                 name="email"
                 required
-                placeholder="ornek@firma.com"
+                placeholder="örnek@firma.com"
                 className="h-12 text-base"
               />
               <Button size="lg" className="h-12 text-base">

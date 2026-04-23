@@ -17,11 +17,13 @@ export default function SignupPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErrorMessage("")
+    setSuccessMessage("")
 
     if (password !== confirmPassword) {
       setErrorMessage("Şifre tekrarı eşleşmiyor.")
@@ -36,14 +38,24 @@ export default function SignupPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       })
 
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string; requiresEmailConfirmation?: boolean }
+        | null
       const message = payload?.message ?? "Beklenmeyen bir hata oluştu."
 
       if (!response.ok) {
         setErrorMessage(message)
+        return
+      }
+
+      setSuccessMessage(message)
+      if (payload?.requiresEmailConfirmation) {
+        router.push("/?durum=kayit-basarili")
+        router.refresh()
         return
       }
 
@@ -132,6 +144,12 @@ export default function SignupPage() {
               {errorMessage ? (
                 <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {errorMessage}
+                </p>
+              ) : null}
+
+              {!errorMessage && successMessage ? (
+                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {successMessage}
                 </p>
               ) : null}
 

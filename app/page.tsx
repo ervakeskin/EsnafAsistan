@@ -3,7 +3,7 @@
 import type { FormEvent } from "react"
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { LoaderCircle, Lock, Mail } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -13,14 +13,17 @@ import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErrorMessage("")
+    setSuccessMessage("")
 
     setIsLoading(true)
 
@@ -30,6 +33,7 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       })
 
@@ -41,6 +45,7 @@ export default function LoginPage() {
         return
       }
 
+      setSuccessMessage(message)
       router.push("/dashboard")
       router.refresh()
     } catch {
@@ -108,6 +113,13 @@ export default function LoginPage() {
               {errorMessage ? (
                 <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {errorMessage}
+                </p>
+              ) : null}
+
+              {!errorMessage && (successMessage || searchParams.get("durum") === "kayit-basarili") ? (
+                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {successMessage ||
+                    "Kayıt başarılı. E-postana gelen doğrulama bağlantısını kullanıp ardından giriş yapabilirsin."}
                 </p>
               ) : null}
 

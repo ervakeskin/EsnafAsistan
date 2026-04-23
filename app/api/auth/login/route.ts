@@ -22,6 +22,10 @@ function mapAuthErrorToTurkish(message: string) {
     return "E-posta formatı geçersiz."
   }
 
+  if (normalized.includes("rate limit")) {
+    return "Çok fazla deneme yapıldı. Lütfen kısa bir süre sonra tekrar dene."
+  }
+
   return "Giriş sırasında bir hata oluştu. Lütfen tekrar dene."
 }
 
@@ -35,10 +39,18 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    return NextResponse.json({ message: mapAuthErrorToTurkish(error.message) }, { status: 401 })
+    const statusCode = typeof error.status === "number" ? error.status : 401
+    return NextResponse.json({ message: mapAuthErrorToTurkish(error.message) }, { status: statusCode })
+  }
+
+  if (!data.session) {
+    return NextResponse.json(
+      { message: "Oturum başlatılamadı. Lütfen tekrar giriş yapmayı dene." },
+      { status: 500 },
+    )
   }
 
   return NextResponse.json({ ok: true, message: "Giriş başarılı." })

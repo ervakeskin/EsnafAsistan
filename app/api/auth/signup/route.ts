@@ -22,6 +22,14 @@ function mapSignupErrorToTurkish(message: string) {
     return "E-posta formatı geçersiz."
   }
 
+  if (normalized.includes("rate limit")) {
+    return "Çok fazla kayıt denemesi yapıldı. Lütfen kısa bir süre sonra tekrar dene."
+  }
+
+  if (normalized.includes("signups not allowed")) {
+    return "Sistemde yeni hesap açma geçici olarak kapalı."
+  }
+
   return "Kayıt sırasında bir hata oluştu. Lütfen tekrar dene."
 }
 
@@ -39,14 +47,20 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({ email, password })
+  const { data, error } = await supabase.auth.signUp({ email, password })
 
   if (error) {
-    return NextResponse.json({ message: mapSignupErrorToTurkish(error.message) }, { status: 400 })
+    const statusCode = typeof error.status === "number" ? error.status : 400
+    return NextResponse.json({ message: mapSignupErrorToTurkish(error.message) }, { status: statusCode })
   }
+
+  const requiresEmailConfirmation = !data.session
 
   return NextResponse.json({
     ok: true,
-    message: "Kayıt başarılı. E-posta doğrulaması açıksa lütfen kutunuzu kontrol edin.",
+    requiresEmailConfirmation,
+    message: requiresEmailConfirmation
+      ? "Kayıt başarılı. Hesabını aktifleştirmek için e-posta kutundaki doğrulama bağlantısını kullan."
+      : "Kayıt başarılı. Oturumun açıldı, panele yönlendiriliyorsun.",
   })
 }

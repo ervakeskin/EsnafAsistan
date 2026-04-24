@@ -1,17 +1,14 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
-export async function createClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+import { getSupabaseEnv } from "@/lib/supabase/env"
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase ortam degiskenleri tanimli degil.")
-  }
+export async function createClient() {
+  const { url, anonKey } = getSupabaseEnv()
 
   const cookieStore = await cookies()
 
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
+  return createServerClient(url, anonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll()
@@ -21,8 +18,15 @@ export async function createClient() {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, options)
           })
-        } catch {
-          // Server Components icinde cookie set hatasi kritik degil.
+        } catch (error) {
+          if (
+            error instanceof Error &&
+            error.message.includes("Cookies can only be modified in a Server Action or Route Handler")
+          ) {
+            return
+          }
+
+          throw error
         }
       },
     },

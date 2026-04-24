@@ -2,17 +2,25 @@ import { createServerClient } from "@supabase/ssr"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-export async function middleware(request: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+import { getSupabaseEnv } from "@/lib/supabase/env"
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+export async function middleware(request: NextRequest) {
+  let env: ReturnType<typeof getSupabaseEnv> | null = null
+  try {
+    env = getSupabaseEnv()
+  } catch {
+    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+      const redirectUrl = new URL("/", request.url)
+      redirectUrl.searchParams.set("durum", "sistem-ayari-hatasi")
+      return NextResponse.redirect(redirectUrl)
+    }
+
     return NextResponse.next()
   }
 
   let response = NextResponse.next({ request })
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createServerClient(env.url, env.anonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll()

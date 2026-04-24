@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { StatusAlert } from "@/components/ui/status-alert"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -75,8 +76,8 @@ export default function SignupPage() {
           <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600">
             EsnafAsistan
           </p>
-          <h1 className="text-4xl font-semibold text-slate-900">Yeni hesap aç, panelini hemen kullan.</h1>
-          <p className="text-lg text-slate-600">E-posta ve şifre ile kayıt ol, ardından doğrudan dükkan paneline geç.</p>
+          <h1 className="text-4xl font-semibold text-slate-900">Yeni hesabınızı açın, panelinizi hemen kullanın.</h1>
+          <p className="text-lg text-slate-600">E-posta ve şifreyle kayıt olun, ardından doğrudan dükkan paneline geçin.</p>
         </section>
 
         <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
@@ -141,17 +142,9 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {errorMessage ? (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {errorMessage}
-                </p>
-              ) : null}
+              {errorMessage ? <StatusAlert message={errorMessage} variant="error" /> : null}
 
-              {!errorMessage && successMessage ? (
-                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {successMessage}
-                </p>
-              ) : null}
+              {!errorMessage && successMessage ? <StatusAlert message={successMessage} variant="success" /> : null}
 
               <Button className="h-12 w-full text-base" disabled={isLoading}>
                 {isLoading ? (

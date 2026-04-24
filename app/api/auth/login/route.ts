@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { AUTH_CONFIG_ERROR_MESSAGE, isSupabaseConfigError } from "@/lib/auth/messages"
 import { createClient } from "@/lib/supabase/server"
 
 type LoginBody = {
@@ -15,7 +16,7 @@ function mapAuthErrorToTurkish(message: string) {
   }
 
   if (normalized.includes("email not confirmed")) {
-    return "E-posta adresini doğrulamadığın için giriş yapamazsın."
+    return "Lütfen e-postanı onaylayarak giriş yap."
   }
 
   if (normalized.includes("invalid email")) {
@@ -30,28 +31,39 @@ function mapAuthErrorToTurkish(message: string) {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as LoginBody
-  const email = body.email?.trim()
-  const password = body.password?.trim()
+  try {
+    const body = (await request.json()) as LoginBody
+    const email = body.email?.trim()
+    const password = body.password?.trim()
 
-  if (!email || !password) {
-    return NextResponse.json({ message: "E-posta ve şifre alanları zorunludur." }, { status: 400 })
-  }
+    if (!email || !password) {
+      return NextResponse.json({ message: "E-posta ve şifre alanları zorunludur." }, { status: 400 })
+    }
 
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error) {
-    const statusCode = typeof error.status === "number" ? error.status : 401
-    return NextResponse.json({ message: mapAuthErrorToTurkish(error.message) }, { status: statusCode })
-  }
+    if (error) {
+      const statusCode = typeof error.status === "number" ? error.status : 401
+      return NextResponse.json({ message: mapAuthErrorToTurkish(error.message) }, { status: statusCode })
+    }
 
-  if (!data.session) {
+    if (!data.session) {
+      return NextResponse.json(
+        { message: "Oturum başlatılamadı. Lütfen tekrar giriş yapmayı dene." },
+        { status: 500 },
+      )
+    }
+
+    return NextResponse.json({ ok: true, message: "Giriş başarılı." })
+  } catch (error) {
+    if (isSupabaseConfigError(error)) {
+      return NextResponse.json({ message: AUTH_CONFIG_ERROR_MESSAGE }, { status: 500 })
+    }
+
     return NextResponse.json(
-      { message: "Oturum başlatılamadı. Lütfen tekrar giriş yapmayı dene." },
+      { message: "Giriş sırasında beklenmeyen bir sorun oluştu. Lütfen tekrar dene." },
       { status: 500 },
     )
   }
-
-  return NextResponse.json({ ok: true, message: "Giriş başarılı." })
 }

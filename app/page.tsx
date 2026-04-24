@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { StatusAlert } from "@/components/ui/status-alert"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,6 +20,14 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const durum = searchParams.get("durum")
+
+  const infoMessageByStatus: Record<string, string> = {
+    "kayit-basarili": "Kayıt başarılı. Lütfen e-postanı onaylayarak giriş yap.",
+    "sistem-ayari-hatasi":
+      "Sistem ayarlarında bağlantı sorunu var. Lütfen biraz sonra tekrar deneyin veya yöneticinle iletişime geç.",
+  }
+  const statusInfoMessage = durum ? infoMessageByStatus[durum] : undefined
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -62,8 +71,8 @@ export default function LoginPage() {
           <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600">
             EsnafAsistan
           </p>
-          <h1 className="text-4xl font-semibold text-slate-900">Dükkanını tek panelden yönet.</h1>
-          <p className="text-lg text-slate-600">Sipariş, stok, teslimat ve kasa takibini sade bir panelle anında gör.</p>
+          <h1 className="text-4xl font-semibold text-slate-900">Dükkanınızı tek bir noktadan yönetin.</h1>
+          <p className="text-lg text-slate-600">Sipariş, stok, teslimat ve kasa takibini sade bir panelde anında görün.</p>
         </section>
 
         <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
@@ -110,17 +119,12 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {errorMessage ? (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {errorMessage}
-                </p>
-              ) : null}
+              {errorMessage ? <StatusAlert message={errorMessage} variant="error" /> : null}
 
-              {!errorMessage && (successMessage || searchParams.get("durum") === "kayit-basarili") ? (
-                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {successMessage ||
-                    "Kayıt başarılı. E-postana gelen doğrulama bağlantısını kullanıp ardından giriş yapabilirsin."}
-                </p>
+              {!errorMessage && successMessage ? <StatusAlert message={successMessage} variant="success" /> : null}
+
+              {!errorMessage && !successMessage && statusInfoMessage ? (
+                <StatusAlert message={statusInfoMessage} variant="info" />
               ) : null}
 
               <Button className="h-12 w-full text-base" disabled={isLoading}>

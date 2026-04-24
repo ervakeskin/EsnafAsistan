@@ -1,11 +1,32 @@
 import { Sparkles } from "lucide-react"
+import { redirect } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
+import { isSupabaseConfigError } from "@/lib/auth/messages"
+import { createClient } from "@/lib/supabase/server"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
+
+    if (error || !user) {
+      redirect("/")
+    }
+  } catch (error) {
+    if (isSupabaseConfigError(error)) {
+      redirect("/?durum=sistem-ayari-hatasi")
+    }
+
+    redirect("/")
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
       <DashboardSidebar />

@@ -1,12 +1,9 @@
 import { createBrowserClient } from "@supabase/ssr"
 
+import { getSupabaseEnv } from "@/lib/supabase/env"
+
 export function createClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const { url, anonKey } = getSupabaseEnv()
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Supabase ortam degiskenleri tanimli degil.")
-  }
-
-  return createBrowserClient(supabaseUrl, supabaseAnonKey)
+  return createBrowserClient(url, anonKey)
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { AUTH_CONFIG_ERROR_MESSAGE, isSupabaseConfigError } from "@/lib/auth/messages"
 import { createClient } from "@/lib/supabase/server"
 
 type SignupBody = {
@@ -34,33 +35,44 @@ function mapSignupErrorToTurkish(message: string) {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as SignupBody
-  const email = body.email?.trim()
-  const password = body.password?.trim()
+  try {
+    const body = (await request.json()) as SignupBody
+    const email = body.email?.trim()
+    const password = body.password?.trim()
 
-  if (!email || !password) {
-    return NextResponse.json({ message: "E-posta ve şifre alanları zorunludur." }, { status: 400 })
+    if (!email || !password) {
+      return NextResponse.json({ message: "E-posta ve şifre alanları zorunludur." }, { status: 400 })
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json({ message: "Şifre en az 6 karakter olmalıdır." }, { status: 400 })
+    }
+
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.signUp({ email, password })
+
+    if (error) {
+      const statusCode = typeof error.status === "number" ? error.status : 400
+      return NextResponse.json({ message: mapSignupErrorToTurkish(error.message) }, { status: statusCode })
+    }
+
+    const requiresEmailConfirmation = !data.session
+
+    return NextResponse.json({
+      ok: true,
+      requiresEmailConfirmation,
+      message: requiresEmailConfirmation
+        ? "Kayıt başarılı. Lütfen e-postanı onaylayarak giriş yap."
+        : "Kayıt başarılı. Oturumun açıldı, panele yönlendiriliyorsun.",
+    })
+  } catch (error) {
+    if (isSupabaseConfigError(error)) {
+      return NextResponse.json({ message: AUTH_CONFIG_ERROR_MESSAGE }, { status: 500 })
+    }
+
+    return NextResponse.json(
+      { message: "Kayıt sırasında beklenmeyen bir sorun oluştu. Lütfen tekrar dene." },
+      { status: 500 },
+    )
   }
-
-  if (password.length < 6) {
-    return NextResponse.json({ message: "Şifre en az 6 karakter olmalıdır." }, { status: 400 })
-  }
-
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signUp({ email, password })
-
-  if (error) {
-    const statusCode = typeof error.status === "number" ? error.status : 400
-    return NextResponse.json({ message: mapSignupErrorToTurkish(error.message) }, { status: statusCode })
-  }
-
-  const requiresEmailConfirmation = !data.session
-
-  return NextResponse.json({
-    ok: true,
-    requiresEmailConfirmation,
-    message: requiresEmailConfirmation
-      ? "Kayıt başarılı. Hesabını aktifleştirmek için e-posta kutundaki doğrulama bağlantısını kullan."
-      : "Kayıt başarılı. Oturumun açıldı, panele yönlendiriliyorsun.",
-  })
 }

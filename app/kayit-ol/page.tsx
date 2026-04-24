@@ -62,7 +62,12 @@ export default function SignupPage() {
 
       router.push("/dashboard")
       router.refresh()
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(`Kayıt sırasında bir bağlantı sorunu oluştu: ${error.message}`)
+        return
+      }
+
       setErrorMessage("Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edin.")
     } finally {
       setIsLoading(false)
@@ -146,7 +151,7 @@ export default function SignupPage() {
 
               {!errorMessage && successMessage ? <StatusAlert message={successMessage} variant="success" /> : null}
 
-              <Button className="h-12 w-full text-base" disabled={isLoading}>
+              <Button type="submit" className="h-12 w-full text-base" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <LoaderCircle className="size-4 animate-spin" />

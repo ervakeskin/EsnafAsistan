@@ -1,7 +1,7 @@
 "use client"
 
 import type { FormEvent } from "react"
-import { useState } from "react"
+import { Suspense, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LoaderCircle, Lock, Mail } from "lucide-react"
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { StatusAlert } from "@/components/ui/status-alert"
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
@@ -22,12 +22,14 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const durum = searchParams.get("durum")
 
-  const infoMessageByStatus: Record<string, string> = {
-    "kayit-basarili": "Kayıt başarılı. Lütfen e-postanı onaylayarak giriş yap.",
-    "sistem-ayari-hatasi":
-      "Sistem ayarlarında bağlantı sorunu var. Lütfen biraz sonra tekrar deneyin veya yöneticinle iletişime geç.",
-  }
-  const statusInfoMessage = durum ? infoMessageByStatus[durum] : undefined
+  const statusInfoMessage = useMemo(() => {
+    const infoMessageByStatus: Record<string, string> = {
+      "kayit-basarili": "Kayıt başarılı. Lütfen e-postanı onaylayarak giriş yap.",
+      "sistem-ayari-hatasi":
+        "Sistem ayarlarında bağlantı sorunu var. Lütfen biraz sonra tekrar deneyin veya yöneticinle iletişime geç.",
+    }
+    return durum ? infoMessageByStatus[durum] : undefined
+  }, [durum])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -57,7 +59,12 @@ export default function LoginPage() {
       setSuccessMessage(message)
       router.push("/dashboard")
       router.refresh()
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(`Giriş sırasında bir bağlantı sorunu oluştu: ${error.message}`)
+        return
+      }
+
       setErrorMessage("Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edin.")
     } finally {
       setIsLoading(false)
@@ -127,7 +134,7 @@ export default function LoginPage() {
                 <StatusAlert message={statusInfoMessage} variant="info" />
               ) : null}
 
-              <Button className="h-12 w-full text-base" disabled={isLoading}>
+              <Button type="submit" className="h-12 w-full text-base" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <LoaderCircle className="size-4 animate-spin" />
@@ -149,5 +156,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
   )
 }

@@ -83,7 +83,22 @@ create table if not exists public.linked_emails (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.reminders (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  note text,
+  reminder_date date not null,
+  category text not null default 'Genel',
+  is_done boolean not null default false,
+  priority text not null default 'normal' check (priority in ('dusuk', 'normal', 'yuksek')),
+  remind_at timestamptz,
+  created_by uuid,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists idx_products_name on public.products(name);
 create index if not exists idx_sales_product_id on public.sales(product_id);
 create index if not exists idx_sales_sold_at on public.sales(sold_at);
 create index if not exists idx_deliveries_expected_date on public.deliveries(expected_date);
+create index if not exists idx_reminders_date on public.reminders(reminder_date);
+create index if not exists idx_reminders_done on public.reminders(is_done);

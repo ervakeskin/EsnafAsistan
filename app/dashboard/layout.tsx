@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react"
 import { redirect } from "next/navigation"
 
+import { AddCenterFab } from "@/components/dashboard/add-center-fab"
 import { Button } from "@/components/ui/button"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { isSupabaseConfigError } from "@/lib/auth/messages"
@@ -9,8 +10,10 @@ import { createClient } from "@/lib/supabase/server"
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  let supabase: Awaited<ReturnType<typeof createClient>>
+
   try {
-    const supabase = await createClient()
+    supabase = await createClient()
     const {
       data: { user },
       error,
@@ -27,6 +30,14 @@ export default async function DashboardLayout({
     redirect("/")
   }
 
+  const { data: warehouseRows } = await supabase
+    .from("warehouses")
+    .select("id, name")
+    .eq("is_active", true)
+    .order("name", { ascending: true })
+
+  const warehouses = (warehouseRows ?? []) as Array<{ id: string; name: string }>
+
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
       <DashboardSidebar />
@@ -42,6 +53,7 @@ export default async function DashboardLayout({
           {children}
         </div>
       </main>
+      <AddCenterFab warehouses={warehouses} />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { AddProductDialog } from "@/components/dashboard/add-product-dialog"
+import { RealtimeListener } from "@/components/dashboard/realtime-listener"
 import { SaleProductDialog } from "@/components/dashboard/sale-product-dialog"
 import { WarehouseFilter } from "@/components/dashboard/warehouse-filter"
 import { Button } from "@/components/ui/button"
@@ -16,7 +17,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createProductAction, createSaleAction, deleteProductAction } from "./actions"
 
 type StokPageProps = {
-  searchParams?: Promise<{ depo?: string }>
+  searchParams?: Promise<{ depo?: string; q?: string }>
 }
 
 type Warehouse = {
@@ -45,6 +46,7 @@ function formatPrice(value: number) {
 
 export default async function StokPage({ searchParams }: StokPageProps) {
   const resolvedSearchParams = (await searchParams) ?? {}
+  const searchQuery = String(resolvedSearchParams.q ?? "").trim()
 
   const supabase = await createClient()
   const { data: warehouseData, error: warehouseError } = await supabase
@@ -70,6 +72,10 @@ export default async function StokPage({ searchParams }: StokPageProps) {
     query = query.eq("warehouse_id", selectedWarehouseId)
   }
 
+  if (searchQuery) {
+    query = query.ilike("name", `%${searchQuery}%`)
+  }
+
   const { data, error } = await query
 
   if (error) {
@@ -82,6 +88,8 @@ export default async function StokPage({ searchParams }: StokPageProps) {
 
   return (
     <section className="space-y-6">
+      <RealtimeListener channelName="stok-live-channel" tables={["products", "sales", "warehouses"]} />
+
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold text-slate-900">Mallar ve Depolar</h1>
         <p className="text-base text-slate-600">
@@ -104,6 +112,25 @@ export default async function StokPage({ searchParams }: StokPageProps) {
           />
         </CardHeader>
         <CardContent className="space-y-5">
+          <form method="GET" className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            {selectedWarehouseId ? <input type="hidden" name="depo" value={selectedWarehouseId} /> : null}
+            <div className="w-full sm:max-w-sm">
+              <label htmlFor="q" className="mb-2 block text-base font-medium">
+                Ürün Ara
+              </label>
+              <input
+                id="q"
+                name="q"
+                defaultValue={searchQuery}
+                placeholder="Ürün adına göre ara..."
+                className="h-12 w-full rounded-lg border border-input bg-transparent px-3 text-base"
+              />
+            </div>
+            <Button type="submit" size="lg" className="h-12 text-base">
+              Ara
+            </Button>
+          </form>
+
           <WarehouseFilter
             value={selectedWarehouseId ?? ""}
             options={warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.name }))}

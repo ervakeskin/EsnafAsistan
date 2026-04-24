@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json({ ok: true, message: "Giriş başarılı." })
+    return NextResponse.json({ ok: true, message: "Giriş başarılı.", redirectTo: "/dashboard" })
   } catch (error) {
     if (isSupabaseConfigError(error)) {
       return NextResponse.json({ message: AUTH_CONFIG_ERROR_MESSAGE }, { status: 500 })

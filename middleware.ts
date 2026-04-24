@@ -2,13 +2,11 @@ import { createServerClient } from "@supabase/ssr"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-import { getSupabaseEnv } from "@/lib/supabase/env"
+import { getSupabaseEnvOrNull } from "@/lib/supabase/env"
 
 export async function middleware(request: NextRequest) {
-  let env: ReturnType<typeof getSupabaseEnv> | null = null
-  try {
-    env = getSupabaseEnv()
-  } catch {
+  const env = getSupabaseEnvOrNull()
+  if (!env) {
     if (request.nextUrl.pathname.startsWith("/dashboard")) {
       const redirectUrl = new URL("/", request.url)
       redirectUrl.searchParams.set("durum", "sistem-ayari-hatasi")
@@ -41,7 +39,15 @@ export async function middleware(request: NextRequest) {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser()
+
+  if (userError) {
+    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+      return NextResponse.redirect(new URL("/", request.url))
+    }
+    return response
+  }
 
   const { pathname } = request.nextUrl
   const isAuthPage = pathname === "/" || pathname === "/kayit-ol"

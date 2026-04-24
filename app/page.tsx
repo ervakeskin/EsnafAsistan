@@ -48,7 +48,9 @@ function LoginPageContent() {
         body: JSON.stringify({ email, password }),
       })
 
-      const payload = (await response.json().catch(() => null)) as { message?: string } | null
+      const payload = (await response.json().catch(() => null)) as
+        | { message?: string; redirectTo?: string }
+        | null
       const message = payload?.message ?? "Beklenmeyen bir hata oluştu."
 
       if (!response.ok) {
@@ -57,7 +59,7 @@ function LoginPageContent() {
       }
 
       setSuccessMessage(message)
-      router.push("/dashboard")
+      router.push(payload?.redirectTo ?? "/dashboard")
       router.refresh()
     } catch (error) {
       if (error instanceof Error) {

@@ -36,9 +36,24 @@ export function DashboardCalendarWidget({ reminders }: Props) {
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null)
 
+  const normalizedReminders = useMemo(
+    () =>
+      reminders.filter(
+        (item): item is Reminder =>
+          Boolean(
+            item &&
+              typeof item === "object" &&
+              typeof item.id === "string" &&
+              typeof item.title === "string" &&
+              typeof item.reminder_date === "string",
+          ),
+      ),
+    [reminders],
+  )
+
   const remindersOfDay = useMemo(
-    () => reminders.filter((item) => item.reminder_date === selectedDate),
-    [reminders, selectedDate],
+    () => normalizedReminders.filter((item) => item.reminder_date === selectedDate),
+    [normalizedReminders, selectedDate],
   )
 
   async function handleCreateReminder(event: FormEvent<HTMLFormElement>) {
@@ -199,7 +214,7 @@ export function DashboardCalendarWidget({ reminders }: Props) {
                   <div>
                     <p className="text-base font-semibold">{item.title}</p>
                     <p className="text-sm text-slate-600">
-                      {item.category} - Öncelik: {PRIORITY_LABELS[item.priority]}
+                      {item.category} - Öncelik: {PRIORITY_LABELS[item.priority] ?? "Normal"}
                     </p>
                     {item.note ? <p className="mt-1 text-sm text-slate-700">{item.note}</p> : null}
                   </div>

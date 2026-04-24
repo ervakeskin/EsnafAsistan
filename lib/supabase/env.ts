@@ -3,26 +3,35 @@ type SupabaseEnv = {
   anonKey: string
 }
 
-const ERROR_MESSAGE = "Supabase ortam değişkenleri tanımlı değil."
-const URL_ERROR_MESSAGE = "NEXT_PUBLIC_SUPABASE_URL geçerli bir URL değil."
-
-function readValue(primaryKey: string, fallbackKey: string) {
-  return process.env[primaryKey] ?? process.env[fallbackKey]
-}
+const REQUIRED_URL_KEY = "NEXT_PUBLIC_SUPABASE_URL"
+const REQUIRED_ANON_KEY = "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+const ERROR_MESSAGE = "Supabase ortam değişkenleri tanımlı değil veya geçersiz."
 
 function resolveSupabaseEnv() {
-  const url = readValue("NEXT_PUBLIC_SUPABASE_URL", "EXPO_PUBLIC_SUPABASE_URL")
-  const anonKey = readValue("NEXT_PUBLIC_SUPABASE_ANON_KEY", "EXPO_PUBLIC_SUPABASE_ANON_KEY")
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (!url || !anonKey) {
-    return { env: null, reason: ERROR_MESSAGE }
+  if (!url) {
+    return {
+      env: null,
+      reason: `${REQUIRED_URL_KEY} bulunamadı. Vercel ve yerel .env ayarlarını kontrol et.`,
+    }
+  }
+
+  if (!anonKey) {
+    return {
+      env: null,
+      reason: `${REQUIRED_ANON_KEY} bulunamadı. Vercel ve yerel .env ayarlarını kontrol et.`,
+    }
   }
 
   try {
-    // URL parse check prevents silent prod misconfiguration.
     new URL(url)
   } catch {
-    return { env: null, reason: URL_ERROR_MESSAGE }
+    return {
+      env: null,
+      reason: `${REQUIRED_URL_KEY} geçerli bir URL değil: ${url}`,
+    }
   }
 
   return { env: { url, anonKey }, reason: null }

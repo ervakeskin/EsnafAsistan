@@ -1,4 +1,4 @@
-import { Mail, Pencil, Power, Plus, Trash2 } from "lucide-react"
+import { Mail, Pencil, Power, Plus, Store, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +11,7 @@ import {
   createWarehouseAction,
   removeLinkedEmailAction,
   renameWarehouseAction,
+  saveShopNameAction,
   toggleWarehouseActiveAction,
 } from "./actions"
 
@@ -29,11 +30,15 @@ type Warehouse = {
 export default async function AyarlarPage() {
   const supabase = await createClient()
 
-  const [{ data: linkedEmailData, error: linkedEmailError }, { data: warehouseData, error: warehouseError }] =
-    await Promise.all([
-      supabase.from("linked_emails").select("id, email, is_active").order("created_at", { ascending: false }),
-      supabase.from("warehouses").select("id, name, is_active").order("created_at", { ascending: false }),
-    ])
+  const [
+    { data: linkedEmailData, error: linkedEmailError },
+    { data: warehouseData, error: warehouseError },
+    { data: shopData },
+  ] = await Promise.all([
+    supabase.from("linked_emails").select("id, email, is_active").order("created_at", { ascending: false }),
+    supabase.from("warehouses").select("id, name, is_active").order("created_at", { ascending: false }),
+    supabase.from("shop_settings").select("shop_name").limit(1).maybeSingle(),
+  ])
 
   if (linkedEmailError) {
     throw new Error(`Bağlı e-posta listesi yüklenemedi: ${linkedEmailError.message}`)
@@ -45,6 +50,7 @@ export default async function AyarlarPage() {
 
   const linkedEmails = (linkedEmailData ?? []) as LinkedEmail[]
   const warehouses = (warehouseData ?? []) as Warehouse[]
+  const shopName = (shopData?.shop_name as string | undefined) ?? "Dükkanım"
 
   return (
     <section className="space-y-6">
@@ -52,6 +58,34 @@ export default async function AyarlarPage() {
         <h1 className="text-3xl font-semibold text-slate-900">Ayarlar</h1>
         <p className="mt-2 text-base text-slate-600">Sipariş/teslimat e-postalarını ve depo yönetimini buradan kontrol et.</p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Dükkan Bilgileri</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={saveShopNameAction} className="space-y-3">
+            <Label htmlFor="shop-name" className="text-base">
+              Dükkan Adı
+            </Label>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Input
+                id="shop-name"
+                type="text"
+                name="shop_name"
+                required
+                defaultValue={shopName}
+                placeholder="Örn: Mehmet Ticaret"
+                className="h-12 text-base"
+              />
+              <Button size="lg" className="h-12 text-base">
+                <Store className="size-4" />
+                Kaydet
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

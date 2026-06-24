@@ -13,8 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EsnafAsistan",
-  description: "Su tesisat malzemeleri dükkan yönetim paneli",
+  title: {
+    default: "EsnafAsistan",
+    template: "%s | EsnafAsistan",
+  },
+  description:
+    "Küçük işletmeler için stok, kasa, teslimat, raporlama ve hatırlatıcı yönetimi sağlayan web uygulaması.",
+  keywords: ["esnaf", "stok takip", "kasa", "teslimat", "dükkan yönetimi", "raporlama"],
+  applicationName: "EsnafAsistan",
+  authors: [{ name: "EsnafAsistan" }],
 };
 
 export default function RootLayout({

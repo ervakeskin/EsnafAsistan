@@ -96,6 +96,13 @@ create table if not exists public.reminders (
   created_at timestamptz not null default now()
 );
 
+-- Dükkan özelleştirme ayarları (tek satırlık tablo)
+create table if not exists public.shop_settings (
+  id uuid primary key default gen_random_uuid(),
+  shop_name text not null default 'Dükkanım',
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists idx_products_name on public.products(name);
 create index if not exists idx_sales_product_id on public.sales(product_id);
 create index if not exists idx_sales_sold_at on public.sales(sold_at);

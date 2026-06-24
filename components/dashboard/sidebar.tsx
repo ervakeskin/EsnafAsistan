@@ -3,8 +3,10 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
+  BarChart3,
   Boxes,
   CalendarClock,
+  HelpCircle,
   LayoutDashboard,
   LogOut,
   MailPlus,
@@ -39,9 +41,19 @@ const menuItems = [
     icon: Wallet,
   },
   {
+    href: "/dashboard/raporlar",
+    label: "Raporlar",
+    icon: BarChart3,
+  },
+  {
     href: "/dashboard/ayarlar",
     label: "Ayarlar",
     icon: MailPlus,
+  },
+  {
+    href: "/dashboard/yardim",
+    label: "Yardım ve Öneriler",
+    icon: HelpCircle,
   },
 ]
 

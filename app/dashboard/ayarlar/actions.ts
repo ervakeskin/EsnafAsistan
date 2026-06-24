@@ -80,6 +80,30 @@ export async function renameWarehouseAction(formData: FormData) {
   revalidatePath("/dashboard/stok")
 }
 
+export async function saveShopNameAction(formData: FormData) {
+  const shopName = String(formData.get("shop_name") ?? "").trim()
+
+  if (!shopName) {
+    throw new Error("Dükkan adı boş bırakılamaz.")
+  }
+
+  const supabase = await createClient()
+
+  // Tek satırlık ayar: mevcut kayıt varsa güncelle, yoksa oluştur.
+  const { data: existing } = await supabase.from("shop_settings").select("id").limit(1).maybeSingle()
+
+  const { error } = existing
+    ? await supabase.from("shop_settings").update({ shop_name: shopName, updated_at: new Date().toISOString() }).eq("id", existing.id)
+    : await supabase.from("shop_settings").insert({ shop_name: shopName })
+
+  if (error) {
+    throw new Error(`Dükkan adı kaydedilemedi: ${error.message}`)
+  }
+
+  revalidatePath("/dashboard/ayarlar")
+  revalidatePath("/dashboard")
+}
+
 export async function toggleWarehouseActiveAction(formData: FormData) {
   const id = String(formData.get("id") ?? "").trim()
   const currentActive = String(formData.get("is_active") ?? "true").trim() === "true"

@@ -1,5 +1,48 @@
+import { Trash2 } from "lucide-react"
+
+import { AddDeliveryDialog } from "@/components/dashboard/add-delivery-dialog"
 import { PageShell } from "@/components/dashboard/page-shell"
+import { RealtimeListener } from "@/components/dashboard/realtime-listener"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { createClient } from "@/lib/supabase/server"
+import {
+  createDeliveryAction,
+  deleteDeliveryAction,
+  updateDeliveryStatusAction,
+} from "./actions"
+
+// Teslimat satırı tipi: liste tablosunda gösterilen alanlar
+type DeliveryRow = {
+  id: string
+  supplier_name: string
+  expected_date: string
+  quantity: number
+  status: "bekliyor" | "teslim-alindi" | "iptal"
+  products: { name: string; unit: string }[] | null
+}
+
+// Durum kodunu kullanıcıya gösterilecek etiket ve renge çevirir
+const STATUS_META: Record<DeliveryRow["status"], { label: string; className: string }> = {
+  bekliyor: { label: "Bekliyor", className: "bg-amber-100 text-amber-800" },
+  "teslim-alindi": { label: "Teslim Alındı", className: "bg-emerald-100 text-emerald-800" },
+  iptal: { label: "İptal", className: "bg-red-100 text-red-700" },
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    dateStyle: "medium",
+    timeZone: "Europe/Istanbul",
+  }).format(new Date(value))
+}
 
 function startOfToday() {
   const date = new Date()
@@ -21,11 +64,18 @@ export default async function TeslimatlarPage() {
   const today = startOfToday()
   const weekEnd = endOfWeek()
 
-  const [{ data: deliveries, error: deliveriesError }, { data: reminders, error: remindersError }] =
-    await Promise.all([
-      supabase.from("deliveries").select("id, expected_date, quantity, status"),
-      supabase.from("reminders").select("id, reminder_date, is_done"),
-    ])
+  const [
+    { data: deliveries, error: deliveriesError },
+    { data: reminders, error: remindersError },
+    { data: products },
+  ] = await Promise.all([
+    supabase
+      .from("deliveries")
+      .select("id, supplier_name, expected_date, quantity, status, products(name, unit)")
+      .order("expected_date", { ascending: true }),
+    supabase.from("reminders").select("id, reminder_date, is_done"),
+    supabase.from("products").select("id, name").order("name", { ascending: true }),
+  ])
 
   if (deliveriesError) {
     throw new Error(`Teslimat verileri yüklenemedi: ${deliveriesError.message}`)
@@ -35,7 +85,7 @@ export default async function TeslimatlarPage() {
     throw new Error(`Hatırlatıcı verileri yüklenemedi: ${remindersError.message}`)
   }
 
-  const deliveryRows = deliveries ?? []
+  const deliveryRows = (deliveries ?? []) as DeliveryRow[]
   const reminderRows = reminders ?? []
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
@@ -55,26 +105,114 @@ export default async function TeslimatlarPage() {
   ).length
 
   return (
-    <PageShell
-      title="Teslimat Takvimi"
-      description="Gelecek malları ve tedarikçi teslim tarihlerini tek ekranda planla."
-      stats={[
-        {
-          label: "Yarın Gelecek Teslimat",
-          value: `${tomorrowCount} kayıt`,
-          helper: "Yarın tarihli teslimat planı",
-        },
-        {
-          label: "Geciken Teslimat",
-          value: `${delayedCount} kayıt`,
-          helper: "Bekliyor durumunda ve tarihi geçmiş teslimatlar",
-        },
-        {
-          label: "Toplam Planlanan Miktar",
-          value: `${monthPlannedQuantity} kalem`,
-          helper: `Bu hafta ${weeklyReminderCount} aktif hatırlatıcı`,
-        },
-      ]}
-    />
+    <div className="space-y-6">
+      <RealtimeListener channelName="teslimatlar" tables={["deliveries"]} />
+      <PageShell
+        title="Teslimat Takvimi"
+        description="Gelecek malları ve tedarikçi teslim tarihlerini tek ekranda planla."
+        stats={[
+          {
+            label: "Yarın Gelecek Teslimat",
+            value: `${tomorrowCount} kayıt`,
+            helper: "Yarın tarihli teslimat planı",
+          },
+          {
+            label: "Geciken Teslimat",
+            value: `${delayedCount} kayıt`,
+            helper: "Bekliyor durumunda ve tarihi geçmiş teslimatlar",
+          },
+          {
+            label: "Toplam Planlanan Miktar",
+            value: `${monthPlannedQuantity} kalem`,
+            helper: `Bu hafta ${weeklyReminderCount} aktif hatırlatıcı`,
+          },
+        ]}
+      />
+
+      <div className="flex justify-end">
+        <AddDeliveryDialog action={createDeliveryAction} products={products ?? []} />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Teslimat Listesi</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table className="text-base">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-base">Tedarikçi</TableHead>
+                <TableHead className="text-base">Ürün</TableHead>
+                <TableHead className="text-base">Beklenen Tarih</TableHead>
+                <TableHead className="text-base">Miktar</TableHead>
+                <TableHead className="text-base">Durum</TableHead>
+                <TableHead className="text-base text-right">İşlem</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {deliveryRows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-8 text-center text-base text-slate-500">
+                    Henüz teslimat kaydı yok.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                deliveryRows.map((delivery) => {
+                  const statusMeta = STATUS_META[delivery.status] ?? STATUS_META.bekliyor
+                  const productInfo = delivery.products?.[0]
+
+                  return (
+                    <TableRow key={delivery.id}>
+                      <TableCell className="text-base font-semibold">{delivery.supplier_name}</TableCell>
+                      <TableCell className="text-base">{productInfo?.name ?? "Genel sipariş"}</TableCell>
+                      <TableCell className="text-base">{formatDate(delivery.expected_date)}</TableCell>
+                      <TableCell className="text-base">
+                        {delivery.quantity} {productInfo?.unit ?? "kalem"}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusMeta.className}`}
+                        >
+                          {statusMeta.label}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-2">
+                          {/* Bekliyor durumundaysa teslim alındı / iptal seçenekleri */}
+                          {delivery.status === "bekliyor" ? (
+                            <>
+                              <form action={updateDeliveryStatusAction}>
+                                <input type="hidden" name="id" value={delivery.id} />
+                                <input type="hidden" name="status" value="teslim-alindi" />
+                                <Button size="sm" className="h-9">
+                                  Teslim Al
+                                </Button>
+                              </form>
+                              <form action={updateDeliveryStatusAction}>
+                                <input type="hidden" name="id" value={delivery.id} />
+                                <input type="hidden" name="status" value="iptal" />
+                                <Button size="sm" variant="outline" className="h-9">
+                                  İptal
+                                </Button>
+                              </form>
+                            </>
+                          ) : null}
+                          <form action={deleteDeliveryAction}>
+                            <input type="hidden" name="id" value={delivery.id} />
+                            <Button type="submit" size="icon-sm" variant="outline" className="h-9 w-9">
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </form>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { FormEvent, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { CalendarDays, LoaderCircle, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -30,7 +31,15 @@ const PRIORITY_LABELS: Record<Reminder["priority"], string> = {
   yuksek: "Yüksek",
 }
 
+// Önceliğe göre kart sol kenar rengi ve etiket rengi
+const PRIORITY_STYLES: Record<Reminder["priority"], { border: string; badge: string }> = {
+  dusuk: { border: "border-l-4 border-l-emerald-400", badge: "text-emerald-700" },
+  normal: { border: "border-l-4 border-l-amber-400", badge: "text-amber-700" },
+  yuksek: { border: "border-l-4 border-l-red-500", badge: "text-red-700" },
+}
+
 export function DashboardCalendarWidget({ reminders }: Props) {
+  const router = useRouter()
   const today = new Date().toISOString().slice(0, 10)
   const [selectedDate, setSelectedDate] = useState(today)
   const [isSaving, setIsSaving] = useState(false)
@@ -84,6 +93,8 @@ export function DashboardCalendarWidget({ reminders }: Props) {
 
       setMessage({ type: "success", text: data?.message ?? "Hatırlatma eklendi." })
       event.currentTarget.reset()
+      // Sunucu tarafı listeyi tazele ki yeni hatırlatıcı hemen görünsün
+      router.refresh()
     } catch (error) {
       setMessage({
         type: "error",
@@ -107,6 +118,7 @@ export function DashboardCalendarWidget({ reminders }: Props) {
         type: response.ok ? "success" : "error",
         text: data?.message ?? (response.ok ? "Durum güncellendi." : "Durum güncellenemedi."),
       })
+      if (response.ok) router.refresh()
     } catch (error) {
       setMessage({
         type: "error",
@@ -128,6 +140,7 @@ export function DashboardCalendarWidget({ reminders }: Props) {
         type: response.ok ? "success" : "error",
         text: data?.message ?? (response.ok ? "Hatırlatma silindi." : "Hatırlatma silinemedi."),
       })
+      if (response.ok) router.refresh()
     } catch (error) {
       setMessage({
         type: "error",
@@ -209,12 +222,18 @@ export function DashboardCalendarWidget({ reminders }: Props) {
             </p>
           ) : (
             remindersOfDay.map((item) => (
-              <div key={item.id} className="rounded-lg border bg-white p-3">
+              <div
+                key={item.id}
+                className={`rounded-lg border bg-white p-3 ${(PRIORITY_STYLES[item.priority] ?? PRIORITY_STYLES.normal).border}`}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-base font-semibold">{item.title}</p>
                     <p className="text-sm text-slate-600">
-                      {item.category} - Öncelik: {PRIORITY_LABELS[item.priority] ?? "Normal"}
+                      {item.category} - Öncelik:{" "}
+                      <span className={`font-medium ${(PRIORITY_STYLES[item.priority] ?? PRIORITY_STYLES.normal).badge}`}>
+                        {PRIORITY_LABELS[item.priority] ?? "Normal"}
+                      </span>
                     </p>
                     {item.note ? <p className="mt-1 text-sm text-slate-700">{item.note}</p> : null}
                   </div>

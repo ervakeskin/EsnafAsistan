@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 
 import { getSupabaseEnvOrNull } from "@/lib/supabase/env"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const env = getSupabaseEnvOrNull()
   if (!env) {
     if (request.nextUrl.pathname.startsWith("/dashboard")) {

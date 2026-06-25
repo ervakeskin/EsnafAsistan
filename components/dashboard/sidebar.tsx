@@ -22,7 +22,7 @@ import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "./theme-toggle"
-import { AiChat } from "./ai-chat"
+import { AiChatTrigger } from "./ai-chat"
 
 const menuItems = [
   {
@@ -124,7 +124,7 @@ export function DashboardSidebar() {
         </div>
 
         <div className="p-3 pb-5 space-y-1 [border-top:1px_solid_rgba(0,0,0,0.06)] dark:[border-top:1px_solid_rgba(255,255,255,0.06)]">
-          <AiChat />
+          <AiChatTrigger variant="sidebar" />
           <ThemeToggle />
           <Button
             variant="ghost"

@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
     }
 
     const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
+    if (!apiKey || apiKey.trim() === "") {
       return NextResponse.json(
-        { error: "AI servisi şu an yapılandırılmamış. GEMINI_API_KEY eksik." },
+        { error: "AI servisi yapılandırılmamış. Lütfen GEMINI_API_KEY değerini .env.local dosyasına ekleyin." },
         { status: 503 },
       )
     }
@@ -104,9 +104,10 @@ export async function POST(req: NextRequest) {
     const reply = await callGeminiAI(messages, context, apiKey)
     return NextResponse.json({ reply })
   } catch (error) {
-    console.error("[AI Chat] Hata:", error)
+    const msg = error instanceof Error ? error.message : "Bilinmeyen hata"
+    console.error("[AI Chat] Hata:", msg)
     return NextResponse.json(
-      { error: "AI servisi şu an yanıt veremiyor. Lütfen tekrar deneyin." },
+      { error: msg },
       { status: 500 },
     )
   }

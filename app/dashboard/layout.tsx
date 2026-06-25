@@ -1,11 +1,8 @@
-import { Settings2, Sparkles } from "lucide-react"
-import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { AddCenterFab } from "@/components/dashboard/add-center-fab"
-import { BackButton } from "@/components/dashboard/back-button"
 import { BottomNavigation } from "@/components/dashboard/bottom-navigation"
-import { Button } from "@/components/ui/button"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { isSupabaseConfigError } from "@/lib/auth/messages"
 import { createClient } from "@/lib/supabase/server"
@@ -52,30 +49,11 @@ export default async function DashboardLayout({
 
       <DashboardSidebar />
 
-        <main id="main-content" className="flex-1">
-          <div className="mx-auto w-full max-w-7xl p-4 md:p-6 lg:p-8">
-            <div className="mb-5 flex items-center justify-between gap-3">
-              <BackButton />
-              <div className="flex items-center gap-2">
-                <Link href="/dashboard/hesap-ayarlari">
-                  <Button variant="outline" size="lg" className="h-11 text-base">
-                    <Settings2 className="size-4" />
-                    Hesap
-                  </Button>
-                </Link>
-                <Link href="/dashboard/yardim">
-                  <Button variant="default" size="lg" className="h-11 text-base">
-                    <Sparkles className="size-4" />
-                    Yardım
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div className="page-enter">
-              {children}
-            </div>
-          </div>
-        </main>
+      <main id="main-content" className="flex-1">
+        {/* DashboardShell: AiChatProvider + Yardım butonu + AiChatDrawer */}
+        <DashboardShell>{children}</DashboardShell>
+      </main>
+
       <AddCenterFab warehouses={warehouses} />
       <BottomNavigation />
     </div>

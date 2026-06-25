@@ -52,29 +52,32 @@ export async function callGeminiAI(
   const systemPrompt = SYSTEM_PROMPT(context)
 
   // Gemini API: google/gemini-2.0-flash
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+  // gemini-2.0-flash-lite: ücretsiz quota'da çalışan en hızlı model
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`
 
-  // Mesaj geçmişini Gemini formatına çevir
-  const geminiContents = messages.map((msg) => ({
-    role: msg.role === "assistant" ? "model" : "user",
-    parts: [{ text: msg.content }],
-  }))
+  // Sistem promptunu ilk sıraya user mesajı olarak ekle (system_instruction yerine)
+  // Bu yaklaşım tüm Gemini versiyonlarında çalışır
+  const geminiContents = [
+    {
+      role: "user",
+      parts: [{ text: `[SİSTEM TALİMATLARI]\n${systemPrompt}\n\n[KULLANICI MESAJI BAŞLIYOR]` }],
+    },
+    {
+      role: "model",
+      parts: [{ text: "Anladım. Verilen talimatlar doğrultusunda yardımcı olacağım." }],
+    },
+    ...messages.map((msg) => ({
+      role: msg.role === "assistant" ? "model" : "user",
+      parts: [{ text: msg.content }],
+    })),
+  ]
 
   const body = {
-    system_instruction: {
-      parts: [{ text: systemPrompt }],
-    },
     contents: geminiContents,
     generationConfig: {
       temperature: 0.7,
-      topK: 40,
-      topP: 0.95,
       maxOutputTokens: 1024,
     },
-    safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-    ],
   }
 
   const response = await fetch(endpoint, {
@@ -84,8 +87,15 @@ export async function callGeminiAI(
   })
 
   if (!response.ok) {
-    const err = await response.text()
-    throw new Error(`Gemini API hatası: ${response.status} — ${err}`)
+    const err = await response.text().catch(() => "")
+    let detail = ""
+    try {
+      const parsed = JSON.parse(err)
+      detail = parsed?.error?.message ?? err
+    } catch {
+      detail = err
+    }
+    throw new Error(`Gemini API hatası (${response.status}): ${detail}`)
   }
 
   const data = await response.json()

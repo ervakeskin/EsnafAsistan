@@ -51,9 +51,7 @@ export async function callGeminiAI(
 ): Promise<string> {
   const systemPrompt = SYSTEM_PROMPT(context)
 
-  // Gemini API: google/gemini-2.0-flash
-  // gemini-2.0-flash-lite: ücretsiz quota'da çalışan en hızlı model
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
 
   // Sistem promptunu ilk sıraya user mesajı olarak ekle (system_instruction yerine)
   // Bu yaklaşım tüm Gemini versiyonlarında çalışır

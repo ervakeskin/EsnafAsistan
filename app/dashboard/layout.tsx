@@ -64,7 +64,7 @@ export default async function DashboardLayout({
                   </Button>
                 </Link>
                 <Link href="/dashboard/yardim">
-                  <Button variant="gradient" size="lg" className="h-11 text-base">
+                  <Button variant="default" size="lg" className="h-11 text-base">
                     <Sparkles className="size-4" />
                     Yardım
                   </Button>

@@ -7,23 +7,23 @@ const actions = [
   {
     href: "/dashboard/stok",
     label: "Yeni Ürün Ekle",
-    description: "Stokuna yeni bir mal ekle",
+    description: "Depona yeni bir ürün ekle",
     icon: Boxes,
-    gradient: "from-blue-500 to-purple-600",
+    iconClass: "bg-primary/10 text-primary",
   },
   {
     href: "/dashboard/kasa",
     label: "Gelir & Gider",
     description: "Kasa hareketi ekle",
     icon: Wallet,
-    gradient: "from-emerald-500 to-teal-600",
+    iconClass: "bg-success/10 text-success",
   },
   {
     href: "/dashboard/teslimatlar",
     label: "Teslimat Ekle",
     description: "Yeni bir teslimat kaydı oluştur",
     icon: CalendarPlus,
-    gradient: "from-amber-500 to-orange-600",
+    iconClass: "bg-warning/10 text-warning",
   },
 ]
 
@@ -34,15 +34,14 @@ export function QuickActions() {
         <Link
           key={action.href}
           href={action.href}
-          className="group relative overflow-hidden rounded-xl bg-card p-5 ring-1 ring-foreground/5 hover:ring-foreground/20 transition-all hover:-translate-y-0.5"
+          className="group relative overflow-hidden rounded-xl bg-card p-5 ring-1 ring-foreground/5 hover:ring-foreground/15 transition-all hover:-translate-y-0.5"
         >
-          <div className={`absolute inset-0 opacity-[0.03] bg-gradient-to-br ${action.gradient}`} />
           <div className="relative">
-            <div className={`inline-flex rounded-lg bg-gradient-to-br ${action.gradient} p-2.5 text-white`}>
+            <div className={`inline-flex rounded-lg ${action.iconClass} p-2.5`}>
               <action.icon className="size-5" />
             </div>
             <p className="mt-3 text-base font-semibold">{action.label}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{action.description}</p>
+            <p className="mt-1 text-sm text-muted-foreground/70">{action.description}</p>
           </div>
         </Link>
       ))}

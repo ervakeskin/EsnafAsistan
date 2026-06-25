@@ -75,7 +75,7 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white to-slate-100 px-4 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="grid w-full max-w-5xl items-center gap-8 md:grid-cols-2">
         <section className="hidden space-y-4 md:block">
           <p className="inline-flex rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-muted-foreground">

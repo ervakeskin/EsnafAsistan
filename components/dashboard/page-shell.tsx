@@ -12,10 +12,10 @@ type PageShellProps = {
   stats: StatCard[]
 }
 
-const GRADIENTS = [
-  "from-blue-500 to-purple-600",
-  "from-emerald-500 to-teal-600",
-  "from-amber-500 to-orange-600",
+const ACCENTS = [
+  "bg-danger/50",
+  "bg-primary/50",
+  "bg-success/50",
 ]
 
 export function PageShell({ title, description, stats }: PageShellProps) {
@@ -29,14 +29,15 @@ export function PageShell({ title, description, stats }: PageShellProps) {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {stats.map((item, idx) => (
           <Card key={item.label} className="overflow-hidden">
-            <CardContent className="p-5">
-              <p className="text-sm font-medium text-muted-foreground tracking-wide uppercase">
+            <div className={`h-1 ${ACCENTS[idx % ACCENTS.length]}`} />
+            <CardContent className="p-6 pt-5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {item.label}
               </p>
-              <p className={`mt-2 text-4xl font-bold bg-gradient-to-br ${GRADIENTS[idx % GRADIENTS.length]} bg-clip-text text-transparent`}>
+              <p className="mt-2 text-4xl font-bold tracking-tight text-foreground">
                 {item.value}
               </p>
-              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+              <p className="mt-2 text-sm text-muted-foreground/70 leading-relaxed">
                 {item.helper}
               </p>
             </CardContent>

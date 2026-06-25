@@ -33,9 +33,9 @@ const PRIORITY_LABELS: Record<Reminder["priority"], string> = {
 
 // Önceliğe göre kart sol kenar rengi ve etiket rengi
 const PRIORITY_STYLES: Record<Reminder["priority"], { border: string; badge: string }> = {
-  dusuk: { border: "border-l-4 border-l-emerald-400", badge: "text-success" },
-  normal: { border: "border-l-4 border-l-amber-400", badge: "text-warning" },
-  yuksek: { border: "border-l-4 border-l-red-500", badge: "text-danger" },
+  dusuk: { border: "border-l-4 border-l-success/60", badge: "text-success" },
+  normal: { border: "border-l-4 border-l-warning/60", badge: "text-warning" },
+  yuksek: { border: "border-l-4 border-l-danger/60", badge: "text-danger" },
 }
 
 export function DashboardCalendarWidget({ reminders }: Props) {

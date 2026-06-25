@@ -98,8 +98,8 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
         type: "error",
         text:
           error instanceof Error
-            ? `Mal eklenemedi: ${error.message}`
-            : "Mal eklenemedi. Lütfen tekrar dene.",
+            ? `Ürün eklenemedi: ${error.message}`
+            : "Ürün eklenemedi. Lütfen tekrar dene.",
       })
     } finally {
       setIsSubmittingManual(false)
@@ -130,7 +130,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
       }
 
       setOcrRows(parsedRows)
-      setOcrMessage({ type: "success", text: `${parsedRows.length} satır okundu. Onaylayıp stoğa ekleyebilirsin.` })
+      setOcrMessage({ type: "success", text: `${parsedRows.length} satır okundu. Onaylayıp depoya ekleyebilirsin.` })
     } catch (error) {
       setOcrRows([])
       setOcrMessage({
@@ -206,7 +206,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
 
   function applyDefaultsToRows() {
     if (ocrRows.length === 0) {
-      setOcrMessage({ type: "error", text: "Varsayılan atamak için önce okunmuş satır olmalı." })
+      setOcrMessage({ type: "error", text: "Varsayılan değer atamak için önce okunmuş bir satır olmalı." })
       return
     }
 
@@ -234,7 +234,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="text-xl">Ekleme Merkezi</DialogTitle>
           <DialogDescription className="text-base">
-            Mal eklemek için elle giriş yap veya sipariş listesini fotoğraftan okut.
+            Ürün eklemek için elle giriş yap veya sipariş listesini fotoğraftan okut.
           </DialogDescription>
         </DialogHeader>
 
@@ -242,7 +242,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
           <TabsList className="w-full">
             <TabsTrigger value="manual">
               <Camera className="size-4" />
-              Elle Mal Ekle
+              Elle Ürün Ekle
             </TabsTrigger>
             <TabsTrigger value="ocr">
               <ScanText className="size-4" />
@@ -254,7 +254,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
             <form className="space-y-4" onSubmit={handleManualSubmit}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="manual-name">Mal Adı</Label>
+                  <Label htmlFor="manual-name">Ürün Adı</Label>
                   <Input id="manual-name" name="name" required placeholder="Örn: 1/2 Küresel Vana" />
                 </div>
                 <div className="space-y-2">
@@ -304,7 +304,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
                     Kaydediliyor
                   </>
                 ) : (
-                  "Malı Kaydet"
+                  "Ürünü Kaydet"
                 )}
               </Button>
             </form>
@@ -398,7 +398,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
                   İşleniyor
                 </>
               ) : (
-                "Onayla ve Stoğa Ekle"
+                "Onayla ve Depoya Ekle"
               )}
             </Button>
           </TabsContent>

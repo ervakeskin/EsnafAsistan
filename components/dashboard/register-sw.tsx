@@ -8,10 +8,10 @@ export function RegisterServiceWorker() {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
-          console.log("[SW] Service Worker kayıt edildi:", registration.scope)
+          console.log("[SW] Service Worker kaydedildi:", registration.scope)
         })
         .catch((error) => {
-          console.error("[SW] Service Worker kayıt başarısız:", error)
+          console.error("[SW] Service Worker kaydedilemedi:", error)
         })
     }
   }, [])

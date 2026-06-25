@@ -14,9 +14,9 @@ type WizardStep = {
 
 const STEPS: WizardStep[] = [
   { icon: Store, title: "Dükkanını Tanı", description: "İlk olarak dükkanının adını ve temel ayarlarını yapalım." },
-  { icon: Box, title: "Ürün Ekle", description: "Stokuna ilk ürünlerini ekle. Fotoğraf çekerek veya barkod okutarak hızlıca ekleyebilirsin." },
+  { icon: Box, title: "Ürün Ekle", description: "Depona ilk ürünlerini ekle. Fotoğraf çekerek veya barkod okutarak hızlıca ekleyebilirsin." },
   { icon: Wallet, title: "Kasa Başlangıcı", description: "Günlük kasana başlangıç bakiyesi ekle ve gelir/gider takibine başla." },
-  { icon: Truck, title: "Tedarikçiler", description: "Sık çalıştığın tedarikçileri ekle, sonraki siparişlerde hızlca seç." },
+  { icon: Truck, title: "Tedarikçiler", description: "Sık çalıştığın tedarikçileri ekle, sonraki siparişlerde hızla seç." },
   { icon: Check, title: "Hazırsın!", description: "Tüm ayarların tamamlandı. Artık dükkanını yönetmeye başlayabilirsin." },
 ]
 
@@ -55,7 +55,7 @@ export function WelcomeWizard({ onComplete }: WelcomeWizardProps) {
         </div>
 
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-purple-600 text-white">
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
             <currentStep.icon className="size-8" />
           </div>
           <h2 className="text-2xl font-bold">{currentStep.title}</h2>

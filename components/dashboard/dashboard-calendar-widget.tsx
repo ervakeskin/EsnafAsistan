@@ -242,7 +242,7 @@ export function DashboardCalendarWidget({ reminders }: Props) {
                       type="button"
                       variant={item.is_done ? "outline" : "default"}
                       size="sm"
-                      className="h-9"
+                      className="h-11 min-h-11 sm:h-9 sm:min-h-9"
                       onClick={() => toggleReminderDone(item.id, item.is_done)}
                     >
                       {item.is_done ? "Aktif Et" : "Tamamlandı"}
@@ -251,7 +251,7 @@ export function DashboardCalendarWidget({ reminders }: Props) {
                       type="button"
                       variant="outline"
                       size="icon-sm"
-                      className="h-9 w-9"
+                      className="h-11 w-11 min-h-11 sm:h-9 sm:w-9 sm:min-h-9"
                       onClick={() => deleteReminder(item.id)}
                     >
                       <Trash2 className="size-4" />

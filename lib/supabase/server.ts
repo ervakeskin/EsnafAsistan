@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 
 import { getSupabaseEnv } from "@/lib/supabase/env"
@@ -29,6 +30,21 @@ export async function createClient() {
           throw error
         }
       },
+    },
+  })
+}
+
+export function createAdminClient() {
+  const { url, serviceRoleKey } = getSupabaseEnv()
+
+  if (!serviceRoleKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY ortam değişkeni tanımlı değil.")
+  }
+
+  return createSupabaseClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     },
   })
 }

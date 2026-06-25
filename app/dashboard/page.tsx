@@ -1,9 +1,14 @@
+import type { Metadata } from "next"
 import { DashboardCalendarWidget } from "@/components/dashboard/dashboard-calendar-widget"
 import { PageShell } from "@/components/dashboard/page-shell"
 import { RealtimeListener } from "@/components/dashboard/realtime-listener"
 import { createClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
+
+export const metadata: Metadata = {
+  title: "Dükkan Özeti",
+}
 
 type ReminderRow = {
   id: string

@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/table"
 import { createClient } from "@/lib/supabase/server"
 
-import { createProductAction, createSaleAction, deleteProductAction } from "./actions"
+import { createProductAction, createSaleAction } from "./actions"
+import { DeleteProductForm } from "./form-client"
 
 type StokPageProps = {
   searchParams?: Promise<{ depo?: string; q?: string }>
@@ -24,6 +25,7 @@ type Warehouse = {
   id: string
   name: string
   is_active: boolean
+  location_type?: string
 }
 
 type Product = {
@@ -51,12 +53,12 @@ export default async function StokPage({ searchParams }: StokPageProps) {
   const supabase = await createClient()
   const { data: warehouseData, error: warehouseError } = await supabase
     .from("warehouses")
-    .select("id, name, is_active")
+    .select("id, name, is_active, location_type")
     .eq("is_active", true)
     .order("name", { ascending: true })
 
   if (warehouseError) {
-    throw new Error(`Depo listesi yüklenemedi: ${warehouseError.message}`)
+    console.error("Lokasyon listesi yüklenemedi:", warehouseError.message)
   }
 
   const warehouses = (warehouseData ?? []) as Warehouse[]
@@ -79,7 +81,7 @@ export default async function StokPage({ searchParams }: StokPageProps) {
   const { data, error } = await query
 
   if (error) {
-    throw new Error(`Stok listesi yüklenemedi: ${error.message}`)
+    console.error("Stok listesi yüklenemedi:", error.message)
   }
 
   const products = (data ?? []) as Product[]
@@ -133,7 +135,10 @@ export default async function StokPage({ searchParams }: StokPageProps) {
 
           <WarehouseFilter
             value={selectedWarehouseId ?? ""}
-            options={warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.name }))}
+            options={warehouses.map((warehouse) => ({
+              value: warehouse.id,
+              label: `${warehouse.location_type === 'raf' ? '🏪 ' : '🏭 '}${warehouse.name}`,
+            }))}
           />
 
           <Table className="text-base">
@@ -160,7 +165,7 @@ export default async function StokPage({ searchParams }: StokPageProps) {
                     <TableCell className="text-base font-semibold">{product.name}</TableCell>
                     <TableCell className="text-base">{product.quantity}</TableCell>
                     <TableCell className="text-base">{product.unit}</TableCell>
-                    <TableCell className="text-base">{product.warehouses?.[0]?.name ?? "Depo yok"}</TableCell>
+                    <TableCell className="text-base">{product.warehouses?.[0]?.name ?? "Lokasyon yok"}</TableCell>
                     <TableCell className="text-base font-semibold text-slate-900">
                       {formatPrice(Number(product.purchase_price))}
                     </TableCell>
@@ -176,17 +181,7 @@ export default async function StokPage({ searchParams }: StokPageProps) {
                           }}
                           action={createSaleAction}
                         />
-                        <form action={deleteProductAction}>
-                          <input type="hidden" name="id" value={product.id} />
-                          <Button
-                            type="submit"
-                            variant="destructive"
-                            size="lg"
-                            className="h-11 text-base"
-                          >
-                            Sil
-                          </Button>
-                        </form>
+                        <DeleteProductForm productId={product.id} />
                       </div>
                     </TableCell>
                   </TableRow>

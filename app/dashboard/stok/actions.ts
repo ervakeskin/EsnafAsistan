@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 
-export async function createProductAction(formData: FormData) {
+export type ActionResult = { success: boolean; message: string }
+
+export async function createProductAction(formData: FormData): Promise<ActionResult> {
   const name = String(formData.get("name") ?? "").trim()
   const quantity = Number(formData.get("quantity") ?? 0)
   const unit = String(formData.get("unit") ?? "").trim()
@@ -12,15 +14,15 @@ export async function createProductAction(formData: FormData) {
   const warehouseId = String(formData.get("warehouse_id") ?? "").trim()
 
   if (!name || !unit) {
-    throw new Error("Ürün adı ve birim zorunludur.")
+    return { success: false, message: "Ürün adı ve birim zorunludur." }
   }
 
   if (quantity < 0 || purchasePrice <= 0) {
-    throw new Error("Miktar veya alış fiyatı geçersiz.")
+    return { success: false, message: "Miktar veya alış fiyatı geçersiz." }
   }
 
   if (!warehouseId) {
-    throw new Error("Depo seçimi zorunludur.")
+    return { success: false, message: "Depo seçimi zorunludur." }
   }
 
   const supabase = await createClient()
@@ -32,11 +34,11 @@ export async function createProductAction(formData: FormData) {
     .single()
 
   if (warehouseError || !selectedWarehouse) {
-    throw new Error("Seçilen depo bulunamadı.")
+    return { success: false, message: "Seçilen depo bulunamadı." }
   }
 
   if (!selectedWarehouse.is_active) {
-    throw new Error("Pasif depoya ürün eklenemez.")
+    return { success: false, message: "Pasif depoya ürün eklenemez." }
   }
 
   const { error } = await supabase.from("products").insert({
@@ -49,30 +51,32 @@ export async function createProductAction(formData: FormData) {
   })
 
   if (error) {
-    throw new Error(`Ürün eklenemedi: ${error.message}`)
+    return { success: false, message: `Ürün eklenemedi: ${error.message}` }
   }
 
   revalidatePath("/dashboard/stok")
   revalidatePath("/dashboard/ayarlar")
+  return { success: true, message: `"${name}" başarıyla eklendi.` }
 }
 
-export async function deleteProductAction(formData: FormData) {
+export async function deleteProductAction(formData: FormData): Promise<ActionResult> {
   const id = String(formData.get("id") ?? "").trim()
   if (!id) {
-    throw new Error("Silinecek ürün bilgisi bulunamadı.")
+    return { success: false, message: "Silinecek ürün bilgisi bulunamadı." }
   }
 
   const supabase = await createClient()
   const { error } = await supabase.from("products").delete().eq("id", id)
 
   if (error) {
-    throw new Error(`Ürün silinemedi: ${error.message}`)
+    return { success: false, message: `Ürün silinemedi: ${error.message}` }
   }
 
   revalidatePath("/dashboard/stok")
+  return { success: true, message: "Ürün silindi." }
 }
 
-export async function createSaleAction(formData: FormData) {
+export async function createSaleAction(formData: FormData): Promise<ActionResult> {
   const productId = String(formData.get("product_id") ?? "").trim()
   const rawQuantity = String(formData.get("quantity") ?? "").trim()
   const rawSalePrice = String(formData.get("sale_price") ?? "").trim()
@@ -82,23 +86,23 @@ export async function createSaleAction(formData: FormData) {
   const note = String(formData.get("note") ?? "").trim()
 
   if (!productId) {
-    throw new Error("Satış için ürün seçimi bulunamadı.")
+    return { success: false, message: "Satış için ürün seçimi bulunamadı." }
   }
 
   if (!rawQuantity) {
-    throw new Error("Satış miktarı boş bırakılamaz.")
+    return { success: false, message: "Satış miktarı boş bırakılamaz." }
   }
 
   if (!Number.isInteger(quantity) || quantity <= 0) {
-    throw new Error("Satış miktarı 1 veya daha büyük bir tam sayı olmalı.")
+    return { success: false, message: "Satış miktarı 1 veya daha büyük bir tam sayı olmalı." }
   }
 
   if (!rawSalePrice) {
-    throw new Error("Satış fiyatı boş bırakılamaz.")
+    return { success: false, message: "Satış fiyatı boş bırakılamaz." }
   }
 
   if (!Number.isFinite(salePrice) || salePrice <= 0) {
-    throw new Error("Satış fiyatı sıfırdan büyük olmalı.")
+    return { success: false, message: "Satış fiyatı sıfırdan büyük olmalı." }
   }
 
   const supabase = await createClient()
@@ -110,16 +114,14 @@ export async function createSaleAction(formData: FormData) {
     .single()
 
   if (productError || !product) {
-    throw new Error(`Ürün bilgisi okunamadı: ${productError?.message ?? "Kayıt bulunamadı."}`)
+    return { success: false, message: `Ürün bilgisi okunamadı: ${productError?.message ?? "Kayıt bulunamadı."}` }
   }
 
   const currentQuantity = Number(product.quantity)
   const purchasePrice = Number(product.purchase_price)
 
   if (currentQuantity < quantity) {
-    throw new Error(
-      `Stok yetersiz. Stokta ${currentQuantity} ürün var, ${quantity} adet satış yapılamaz.`,
-    )
+    return { success: false, message: `Stok yetersiz. Stokta ${currentQuantity} ürün var, ${quantity} adet satış yapılamaz.` }
   }
 
   const newQuantity = currentQuantity - quantity
@@ -133,11 +135,11 @@ export async function createSaleAction(formData: FormData) {
     .maybeSingle()
 
   if (stockUpdateError) {
-    throw new Error(`Stok güncellenemedi: ${stockUpdateError.message}`)
+    return { success: false, message: `Stok güncellenemedi: ${stockUpdateError.message}` }
   }
 
   if (!updatedStockRow) {
-    throw new Error("Stok değişti. Lütfen sayfayı yenileyip tekrar deneyin.")
+    return { success: false, message: "Stok değişti. Lütfen sayfayı yenileyip tekrar deneyin." }
   }
 
   const { error: saleInsertError } = await supabase.from("sales").insert({
@@ -151,9 +153,10 @@ export async function createSaleAction(formData: FormData) {
 
   if (saleInsertError) {
     await supabase.from("products").update({ quantity: currentQuantity }).eq("id", productId)
-    throw new Error(`Satış kaydı oluşturulamadı: ${saleInsertError.message}`)
+    return { success: false, message: `Satış kaydı oluşturulamadı: ${saleInsertError.message}` }
   }
 
   revalidatePath("/dashboard/stok")
   revalidatePath("/dashboard/kasa")
+  return { success: true, message: "Satış başarıyla kaydedildi." }
 }

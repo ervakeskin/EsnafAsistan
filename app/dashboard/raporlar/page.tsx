@@ -70,7 +70,7 @@ export default async function RaporlarPage() {
     ])
 
   if (salesError) {
-    throw new Error(`Rapor verileri yüklenemedi: ${salesError.message}`)
+    console.error("Rapor verileri yüklenemedi:", salesError.message)
   }
 
   const saleRows = (sales ?? []) as SaleRow[]

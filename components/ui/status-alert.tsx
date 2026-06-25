@@ -27,7 +27,8 @@ export function StatusAlert({ message, variant = "info", className }: StatusAler
 
   return (
     <div
-      role="status"
+      role={variant === "error" ? "alert" : "status"}
+      aria-live={variant === "error" ? "assertive" : "polite"}
       className={cn("flex items-start gap-2 rounded-lg border px-3 py-2 text-sm", variantStyles[variant], className)}
     >
       <Icon className="mt-0.5 size-4 shrink-0" />

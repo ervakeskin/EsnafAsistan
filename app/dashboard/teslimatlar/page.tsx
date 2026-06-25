@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react"
+import { CheckCircle2, Trash2, XCircle } from "lucide-react"
 
 import { AddDeliveryDialog } from "@/components/dashboard/add-delivery-dialog"
 import { PageShell } from "@/components/dashboard/page-shell"
@@ -14,11 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { createClient } from "@/lib/supabase/server"
-import {
-  createDeliveryAction,
-  deleteDeliveryAction,
-  updateDeliveryStatusAction,
-} from "./actions"
+import { createDeliveryAction } from "./actions"
+import { DeliveryStatusForm, DeleteDeliveryForm } from "./form-client"
 
 // Teslimat satırı tipi: liste tablosunda gösterilen alanlar
 type DeliveryRow = {
@@ -31,10 +28,10 @@ type DeliveryRow = {
 }
 
 // Durum kodunu kullanıcıya gösterilecek etiket ve renge çevirir
-const STATUS_META: Record<DeliveryRow["status"], { label: string; className: string }> = {
-  bekliyor: { label: "Bekliyor", className: "bg-amber-100 text-amber-800" },
-  "teslim-alindi": { label: "Teslim Alındı", className: "bg-emerald-100 text-emerald-800" },
-  iptal: { label: "İptal", className: "bg-red-100 text-red-700" },
+const STATUS_META: Record<DeliveryRow["status"], { label: string; className: string; icon: typeof CheckCircle2 }> = {
+  bekliyor: { label: "Bekliyor", className: "bg-amber-100 text-amber-800", icon: XCircle },
+  "teslim-alindi": { label: "Teslim Alındı", className: "bg-emerald-100 text-emerald-800", icon: CheckCircle2 },
+  iptal: { label: "İptal", className: "bg-red-100 text-red-700", icon: XCircle },
 }
 
 function formatDate(value: string) {
@@ -78,11 +75,11 @@ export default async function TeslimatlarPage() {
   ])
 
   if (deliveriesError) {
-    throw new Error(`Teslimat verileri yüklenemedi: ${deliveriesError.message}`)
+    console.error("Teslimat verileri yüklenemedi:", deliveriesError.message)
   }
 
   if (remindersError) {
-    throw new Error(`Hatırlatıcı verileri yüklenemedi: ${remindersError.message}`)
+    console.error("Hatırlatıcı verileri yüklenemedi:", remindersError.message)
   }
 
   const deliveryRows = (deliveries ?? []) as DeliveryRow[]
@@ -171,8 +168,9 @@ export default async function TeslimatlarPage() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusMeta.className}`}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${statusMeta.className}`}
                         >
+                          <statusMeta.icon className="size-4" />
                           {statusMeta.label}
                         </span>
                       </TableCell>
@@ -181,28 +179,11 @@ export default async function TeslimatlarPage() {
                           {/* Bekliyor durumundaysa teslim alındı / iptal seçenekleri */}
                           {delivery.status === "bekliyor" ? (
                             <>
-                              <form action={updateDeliveryStatusAction}>
-                                <input type="hidden" name="id" value={delivery.id} />
-                                <input type="hidden" name="status" value="teslim-alindi" />
-                                <Button size="sm" className="h-9">
-                                  Teslim Al
-                                </Button>
-                              </form>
-                              <form action={updateDeliveryStatusAction}>
-                                <input type="hidden" name="id" value={delivery.id} />
-                                <input type="hidden" name="status" value="iptal" />
-                                <Button size="sm" variant="outline" className="h-9">
-                                  İptal
-                                </Button>
-                              </form>
+                              <DeliveryStatusForm deliveryId={delivery.id} status="teslim-alindi" label="Teslim Al" />
+                              <DeliveryStatusForm deliveryId={delivery.id} status="iptal" label="İptal" />
                             </>
                           ) : null}
-                          <form action={deleteDeliveryAction}>
-                            <input type="hidden" name="id" value={delivery.id} />
-                            <Button type="submit" size="icon-sm" variant="outline" className="h-9 w-9">
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </form>
+                          <DeleteDeliveryForm deliveryId={delivery.id} />
                         </div>
                       </TableCell>
                     </TableRow>

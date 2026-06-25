@@ -1,6 +1,7 @@
 type SupabaseEnv = {
   url: string
   anonKey: string
+  serviceRoleKey: string
 }
 
 const REQUIRED_URL_KEY = "NEXT_PUBLIC_SUPABASE_URL"
@@ -10,6 +11,7 @@ const ERROR_MESSAGE = "Supabase ortam değişkenleri tanımlı değil veya geçe
 function resolveSupabaseEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ""
 
   if (!url) {
     return {
@@ -34,7 +36,7 @@ function resolveSupabaseEnv() {
     }
   }
 
-  return { env: { url, anonKey }, reason: null }
+  return { env: { url, anonKey, serviceRoleKey }, reason: null }
 }
 
 export function getSupabaseEnvOrNull(): SupabaseEnv | null {

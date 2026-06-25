@@ -74,7 +74,7 @@ export default async function KasaPage() {
     .order("sold_at", { ascending: false })
 
   if (error) {
-    throw new Error(`Kasa verisi yüklenemedi: ${error.message}`)
+    console.error("Kasa verisi yüklenemedi:", error.message)
   }
 
   const sales = (data ?? []) as SaleRow[]

@@ -1,115 +1,98 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-
 import { createClient } from "@/lib/supabase/server"
+import { makeForwardingAddress } from "@/lib/email"
 
-export async function createLinkedEmailAction(formData: FormData) {
-  const email = String(formData.get("email") ?? "")
-    .trim()
-    .toLowerCase()
+export type ActionResult = { success: boolean; message: string }
 
-  if (!email.includes("@")) {
-    throw new Error("Geçerli bir e-posta adresi girin.")
+export async function saveShopNameAction(formData: FormData): Promise<ActionResult> {
+  const shopName = String(formData.get("shop_name") ?? "").trim()
+
+  if (!shopName) {
+    return { success: false, message: "Dükkan adı boş bırakılamaz." }
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.from("linked_emails").insert({ email, is_active: true })
+  const { data: existing } = await supabase.from("shop_settings").select("id, forwarding_address").limit(1).maybeSingle()
 
-  if (error) {
-    throw new Error(`E-posta eklenemedi: ${error.message}`)
+  if (existing) {
+    const { error } = await supabase
+      .from("shop_settings")
+      .update({ shop_name: shopName, updated_at: new Date().toISOString() })
+      .eq("id", existing.id)
+
+    if (error) return { success: false, message: `Dükkan adı kaydedilemedi: ${error.message}` }
+  } else {
+    const { data: newRow, error } = await supabase
+      .from("shop_settings")
+      .insert({ shop_name: shopName })
+      .select("id")
+      .single()
+
+    if (error || !newRow) return { success: false, message: `Dükkan adı kaydedilemedi: ${error?.message ?? "bilinmeyen hata"}` }
+
+    const address = makeForwardingAddress(newRow.id)
+    await supabase.from("shop_settings").update({ forwarding_address: address }).eq("id", newRow.id)
   }
 
   revalidatePath("/dashboard/ayarlar")
+  revalidatePath("/dashboard")
+  return { success: true, message: "Dükkan adı kaydedildi." }
 }
 
-export async function removeLinkedEmailAction(formData: FormData) {
-  const id = String(formData.get("id") ?? "").trim()
-
-  if (!id) {
-    throw new Error("Silinecek e-posta seçilemedi.")
-  }
-
-  const supabase = await createClient()
-  const { error } = await supabase.from("linked_emails").delete().eq("id", id)
-
-  if (error) {
-    throw new Error(`E-posta kaldırılamadı: ${error.message}`)
-  }
-
-  revalidatePath("/dashboard/ayarlar")
-}
-
-export async function createWarehouseAction(formData: FormData) {
+export async function createWarehouseAction(formData: FormData): Promise<ActionResult> {
   const name = String(formData.get("name") ?? "").trim()
+  const locationType = String(formData.get("location_type") ?? "depo").trim()
 
   if (!name) {
-    throw new Error("Depo adı boş bırakılamaz.")
+    return { success: false, message: "Lokasyon adı boş bırakılamaz." }
+  }
+
+  if (locationType !== "depo" && locationType !== "raf") {
+    return { success: false, message: "Geçerli bir lokasyon türü seçin (depo veya raf)." }
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.from("warehouses").insert({ name, is_active: true })
+  const { error } = await supabase.from("warehouses").insert({ name, is_active: true, location_type: locationType })
 
   if (error) {
-    throw new Error(`Depo eklenemedi: ${error.message}`)
+    return { success: false, message: `Depo eklenemedi: ${error.message}` }
   }
 
   revalidatePath("/dashboard/ayarlar")
   revalidatePath("/dashboard/stok")
+  return { success: true, message: `"${name}" başarıyla eklendi.` }
 }
 
-export async function renameWarehouseAction(formData: FormData) {
+export async function renameWarehouseAction(formData: FormData): Promise<ActionResult> {
   const id = String(formData.get("id") ?? "").trim()
   const name = String(formData.get("name") ?? "").trim()
 
   if (!id || !name) {
-    throw new Error("Depo bilgileri eksik.")
+    return { success: false, message: "Depo bilgileri eksik." }
   }
 
   const supabase = await createClient()
   const { error } = await supabase.from("warehouses").update({ name }).eq("id", id)
 
   if (error) {
-    throw new Error(`Depo adı güncellenemedi: ${error.message}`)
+    return { success: false, message: `Depo adı güncellenemedi: ${error.message}` }
   }
 
-  // Uyumluluk için products.warehouse alanını da güncel tutuyoruz.
   await supabase.from("products").update({ warehouse: name }).eq("warehouse_id", id)
 
   revalidatePath("/dashboard/ayarlar")
   revalidatePath("/dashboard/stok")
+  return { success: true, message: "Lokasyon adı güncellendi." }
 }
 
-export async function saveShopNameAction(formData: FormData) {
-  const shopName = String(formData.get("shop_name") ?? "").trim()
-
-  if (!shopName) {
-    throw new Error("Dükkan adı boş bırakılamaz.")
-  }
-
-  const supabase = await createClient()
-
-  // Tek satırlık ayar: mevcut kayıt varsa güncelle, yoksa oluştur.
-  const { data: existing } = await supabase.from("shop_settings").select("id").limit(1).maybeSingle()
-
-  const { error } = existing
-    ? await supabase.from("shop_settings").update({ shop_name: shopName, updated_at: new Date().toISOString() }).eq("id", existing.id)
-    : await supabase.from("shop_settings").insert({ shop_name: shopName })
-
-  if (error) {
-    throw new Error(`Dükkan adı kaydedilemedi: ${error.message}`)
-  }
-
-  revalidatePath("/dashboard/ayarlar")
-  revalidatePath("/dashboard")
-}
-
-export async function toggleWarehouseActiveAction(formData: FormData) {
+export async function toggleWarehouseActiveAction(formData: FormData): Promise<ActionResult> {
   const id = String(formData.get("id") ?? "").trim()
   const currentActive = String(formData.get("is_active") ?? "true").trim() === "true"
 
   if (!id) {
-    throw new Error("Depo seçilemedi.")
+    return { success: false, message: "Depo seçilemedi." }
   }
 
   const supabase = await createClient()
@@ -121,11 +104,11 @@ export async function toggleWarehouseActiveAction(formData: FormData) {
       .eq("is_active", true)
 
     if (countError) {
-      throw new Error(`Depo durumu kontrol edilemedi: ${countError.message}`)
+      return { success: false, message: `Depo durumu kontrol edilemedi: ${countError.message}` }
     }
 
     if ((count ?? 0) <= 1) {
-      throw new Error("En az bir depo aktif kalmalıdır.")
+      return { success: false, message: "En az bir depo aktif kalmalıdır." }
     }
   }
 
@@ -135,9 +118,60 @@ export async function toggleWarehouseActiveAction(formData: FormData) {
     .eq("id", id)
 
   if (error) {
-    throw new Error(`Depo durumu güncellenemedi: ${error.message}`)
+    return { success: false, message: `Depo durumu güncellenemedi: ${error.message}` }
   }
 
   revalidatePath("/dashboard/ayarlar")
   revalidatePath("/dashboard/stok")
+  return { success: true, message: currentActive ? "Lokasyon pasifleştirildi." : "Lokasyon aktifleştirildi." }
+}
+
+export async function deleteWarehouseAction(formData: FormData): Promise<ActionResult> {
+  const id = String(formData.get("id") ?? "").trim()
+
+  if (!id) {
+    return { success: false, message: "Silinecek lokasyon seçilemedi." }
+  }
+
+  const supabase = await createClient()
+
+  const { count, error: countError } = await supabase
+    .from("warehouses")
+    .select("id", { count: "exact", head: true })
+
+  if (countError) {
+    return { success: false, message: `Lokasyon sayısı kontrol edilemedi: ${countError.message}` }
+  }
+
+  if ((count ?? 0) <= 1) {
+    return { success: false, message: "Son lokasyon silinemez. En az bir lokasyon kalmalıdır." }
+  }
+
+  const { error } = await supabase.from("warehouses").delete().eq("id", id)
+
+  if (error) {
+    return { success: false, message: `Lokasyon silinemedi: ${error.message}` }
+  }
+
+  revalidatePath("/dashboard/ayarlar")
+  revalidatePath("/dashboard/stok")
+  return { success: true, message: "Lokasyon silindi." }
+}
+
+export async function removeKnownSenderAction(formData: FormData): Promise<ActionResult> {
+  const id = String(formData.get("id") ?? "").trim()
+
+  if (!id) {
+    return { success: false, message: "Gönderici seçilemedi." }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from("linked_emails").delete().eq("id", id)
+
+  if (error) {
+    return { success: false, message: `Gönderici kaldırılamadı: ${error.message}` }
+  }
+
+  revalidatePath("/dashboard/ayarlar")
+  return { success: true, message: "Gönderici listeden kaldırıldı." }
 }

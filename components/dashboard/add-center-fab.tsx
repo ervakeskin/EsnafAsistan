@@ -91,7 +91,7 @@ export function AddCenterFab({ warehouses }: AddCenterFabProps) {
       }
 
       setManualMessage({ type: "success", text: message })
-      event.currentTarget.reset()
+      try { event.currentTarget?.reset() } catch { /* form zaten kapandıysa önemsiz */ }
       router.refresh()
     } catch (error) {
       setManualMessage({

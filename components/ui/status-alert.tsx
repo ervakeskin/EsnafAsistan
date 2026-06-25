@@ -11,8 +11,8 @@ type StatusAlertProps = {
 }
 
 const variantStyles: Record<StatusAlertVariant, string> = {
-  error: "border-red-200 bg-red-50 text-red-700",
-  success: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  error: "border-red-200 bg-danger-bg text-danger",
+  success: "border-emerald-200 bg-success-bg text-success",
   info: "border-sky-200 bg-sky-50 text-sky-700",
 }
 

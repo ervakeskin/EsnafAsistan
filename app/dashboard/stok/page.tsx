@@ -1,4 +1,5 @@
 import { AddProductDialog } from "@/components/dashboard/add-product-dialog"
+import { Breadcrumb } from "@/components/dashboard/breadcrumb"
 import { RealtimeListener } from "@/components/dashboard/realtime-listener"
 import { SaleProductDialog } from "@/components/dashboard/sale-product-dialog"
 import { WarehouseFilter } from "@/components/dashboard/warehouse-filter"
@@ -92,9 +93,11 @@ export default async function StokPage({ searchParams }: StokPageProps) {
     <section className="space-y-6">
       <RealtimeListener channelName="stok-live-channel" tables={["products", "sales", "warehouses"]} />
 
+      <Breadcrumb items={[{ label: "Ana Sayfa", href: "/dashboard" }, { label: "Stok" }]} />
+
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-slate-900">Mallar ve Depolar</h1>
-        <p className="text-base text-slate-600">
+        <h1 className="text-3xl font-semibold text-foreground">Mallar ve Depolar</h1>
+        <p className="text-base text-muted-foreground">
           Alış fiyatlarını net gör, depoya göre filtrele ve ürünleri tek yerden yönet.
         </p>
       </div>
@@ -155,7 +158,7 @@ export default async function StokPage({ searchParams }: StokPageProps) {
             <TableBody>
               {products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-8 text-center text-base text-slate-500">
+                  <TableCell colSpan={6} className="py-8 text-center text-base text-muted-foreground">
                     Bu depoda henüz ürün yok.
                   </TableCell>
                 </TableRow>
@@ -166,7 +169,7 @@ export default async function StokPage({ searchParams }: StokPageProps) {
                     <TableCell className="text-base">{product.quantity}</TableCell>
                     <TableCell className="text-base">{product.unit}</TableCell>
                     <TableCell className="text-base">{product.warehouses?.[0]?.name ?? "Lokasyon yok"}</TableCell>
-                    <TableCell className="text-base font-semibold text-slate-900">
+                    <TableCell className="text-base font-semibold text-foreground">
                       {formatPrice(Number(product.purchase_price))}
                     </TableCell>
                     <TableCell className="text-right">

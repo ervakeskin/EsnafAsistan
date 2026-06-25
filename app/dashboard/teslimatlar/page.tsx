@@ -1,6 +1,7 @@
 import { CheckCircle2, Trash2, XCircle } from "lucide-react"
 
 import { AddDeliveryDialog } from "@/components/dashboard/add-delivery-dialog"
+import { Breadcrumb } from "@/components/dashboard/breadcrumb"
 import { PageShell } from "@/components/dashboard/page-shell"
 import { RealtimeListener } from "@/components/dashboard/realtime-listener"
 import { Button } from "@/components/ui/button"
@@ -24,14 +25,15 @@ type DeliveryRow = {
   expected_date: string
   quantity: number
   status: "bekliyor" | "teslim-alindi" | "iptal"
+  product_name?: string | null
   products: { name: string; unit: string }[] | null
 }
 
 // Durum kodunu kullanıcıya gösterilecek etiket ve renge çevirir
 const STATUS_META: Record<DeliveryRow["status"], { label: string; className: string; icon: typeof CheckCircle2 }> = {
-  bekliyor: { label: "Bekliyor", className: "bg-amber-100 text-amber-800", icon: XCircle },
-  "teslim-alindi": { label: "Teslim Alındı", className: "bg-emerald-100 text-emerald-800", icon: CheckCircle2 },
-  iptal: { label: "İptal", className: "bg-red-100 text-red-700", icon: XCircle },
+  bekliyor: { label: "Bekliyor", className: "bg-warning-bg text-warning", icon: XCircle },
+  "teslim-alindi": { label: "Teslim Alındı", className: "bg-success-bg text-success", icon: CheckCircle2 },
+  iptal: { label: "İptal", className: "bg-danger-bg text-danger", icon: XCircle },
 }
 
 function formatDate(value: string) {
@@ -68,7 +70,7 @@ export default async function TeslimatlarPage() {
   ] = await Promise.all([
     supabase
       .from("deliveries")
-      .select("id, supplier_name, expected_date, quantity, status, products(name, unit)")
+      .select("id, supplier_name, expected_date, quantity, status, product_name, products(name, unit)")
       .order("expected_date", { ascending: true }),
     supabase.from("reminders").select("id, reminder_date, is_done"),
     supabase.from("products").select("id, name").order("name", { ascending: true }),
@@ -103,6 +105,7 @@ export default async function TeslimatlarPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb items={[{ label: "Ana Sayfa", href: "/dashboard" }, { label: "Teslimatlar" }]} />
       <RealtimeListener channelName="teslimatlar" tables={["deliveries"]} />
       <PageShell
         title="Teslimat Takvimi"
@@ -149,7 +152,7 @@ export default async function TeslimatlarPage() {
             <TableBody>
               {deliveryRows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-8 text-center text-base text-slate-500">
+                  <TableCell colSpan={6} className="py-8 text-center text-base text-muted-foreground">
                     Henüz teslimat kaydı yok.
                   </TableCell>
                 </TableRow>
@@ -161,7 +164,7 @@ export default async function TeslimatlarPage() {
                   return (
                     <TableRow key={delivery.id}>
                       <TableCell className="text-base font-semibold">{delivery.supplier_name}</TableCell>
-                      <TableCell className="text-base">{productInfo?.name ?? "Genel sipariş"}</TableCell>
+                      <TableCell className="text-base">{delivery.product_name || productInfo?.name || "Genel sipariş"}</TableCell>
                       <TableCell className="text-base">{formatDate(delivery.expected_date)}</TableCell>
                       <TableCell className="text-base">
                         {delivery.quantity} {productInfo?.unit ?? "kalem"}

@@ -1,5 +1,6 @@
 import { AlertTriangle, Award, TrendingUp, Truck } from "lucide-react"
 
+import { Breadcrumb } from "@/components/dashboard/breadcrumb"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -128,9 +129,10 @@ export default async function RaporlarPage() {
 
   return (
     <section className="space-y-6">
+      <Breadcrumb items={[{ label: "Ana Sayfa", href: "/dashboard" }, { label: "Raporlar" }]} />
       <div>
-        <h1 className="text-3xl font-semibold text-slate-900">Raporlar ve Analiz</h1>
-        <p className="mt-2 text-base text-slate-600">
+        <h1 className="text-3xl font-semibold text-foreground">Raporlar ve Analiz</h1>
+        <p className="mt-2 text-base text-muted-foreground">
           Son 30 günün satış, stok ve teslimat performansını tek ekranda incele.
         </p>
       </div>
@@ -139,37 +141,37 @@ export default async function RaporlarPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bu Hafta Ciro</CardTitle>
+            <CardTitle className="text-base text-muted-foreground">Bu Hafta Ciro</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold text-slate-900">{formatPrice(weeklyRevenue)}</p>
+            <p className="text-3xl font-semibold text-foreground">{formatPrice(weeklyRevenue)}</p>
             <p className="mt-2 text-sm text-muted-foreground">Son 7 gün</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bu Hafta Kâr</CardTitle>
+            <CardTitle className="text-base text-muted-foreground">Bu Hafta Kâr</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold text-emerald-700">{formatPrice(weeklyProfit)}</p>
+            <p className="text-3xl font-semibold text-success">{formatPrice(weeklyProfit)}</p>
             <p className="mt-2 text-sm text-muted-foreground">Cepte kalan (son 7 gün)</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bu Ay Ciro</CardTitle>
+            <CardTitle className="text-base text-muted-foreground">Bu Ay Ciro</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold text-slate-900">{formatPrice(monthlyRevenue)}</p>
+            <p className="text-3xl font-semibold text-foreground">{formatPrice(monthlyRevenue)}</p>
             <p className="mt-2 text-sm text-muted-foreground">Son 30 gün</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bu Ay Kâr</CardTitle>
+            <CardTitle className="text-base text-muted-foreground">Bu Ay Kâr</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold text-emerald-700">{formatPrice(monthlyProfit)}</p>
+            <p className="text-3xl font-semibold text-success">{formatPrice(monthlyProfit)}</p>
             <p className="mt-2 text-sm text-muted-foreground">Cepte kalan (son 30 gün)</p>
           </CardContent>
         </Card>
@@ -180,7 +182,7 @@ export default async function RaporlarPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <Award className="size-5 text-amber-500" />
+              <Award className="size-5 text-warning" />
               En Çok Satan Ürünler
             </CardTitle>
           </CardHeader>
@@ -196,7 +198,7 @@ export default async function RaporlarPage() {
               <TableBody>
                 {topProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-8 text-center text-base text-slate-500">
+                    <TableCell colSpan={3} className="py-8 text-center text-base text-muted-foreground">
                       Son 30 günde satış kaydı yok.
                     </TableCell>
                   </TableRow>
@@ -205,7 +207,7 @@ export default async function RaporlarPage() {
                     <TableRow key={product.name}>
                       <TableCell className="text-base font-semibold">{product.name}</TableCell>
                       <TableCell className="text-base">{product.quantity}</TableCell>
-                      <TableCell className="text-base font-semibold text-emerald-700">
+                      <TableCell className="text-base font-semibold text-success">
                         {formatPrice(product.profit)}
                       </TableCell>
                     </TableRow>
@@ -220,7 +222,7 @@ export default async function RaporlarPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <AlertTriangle className="size-5 text-red-500" />
+              <AlertTriangle className="size-5 text-danger" />
               Kritik Stok ({CRITICAL_STOCK_THRESHOLD} ve altı)
             </CardTitle>
           </CardHeader>
@@ -236,7 +238,7 @@ export default async function RaporlarPage() {
               <TableBody>
                 {criticalProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-8 text-center text-base text-slate-500">
+                    <TableCell colSpan={3} className="py-8 text-center text-base text-muted-foreground">
                       Kritik seviyede ürün yok. 👍
                     </TableCell>
                   </TableRow>
@@ -245,7 +247,7 @@ export default async function RaporlarPage() {
                     <TableRow key={product.id}>
                       <TableCell className="text-base font-semibold">{product.name}</TableCell>
                       <TableCell className="text-base">{product.warehouse ?? "-"}</TableCell>
-                      <TableCell className="text-base font-semibold text-red-600">
+                      <TableCell className="text-base font-semibold text-danger">
                         {product.quantity} {product.unit}
                       </TableCell>
                     </TableRow>
@@ -261,7 +263,7 @@ export default async function RaporlarPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
-            <Truck className="size-5 text-slate-500" />
+            <Truck className="size-5 text-muted-foreground" />
             Tedarikçi Teslimat Performansı
           </CardTitle>
         </CardHeader>
@@ -279,7 +281,7 @@ export default async function RaporlarPage() {
             <TableBody>
               {supplierRows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-8 text-center text-base text-slate-500">
+                  <TableCell colSpan={5} className="py-8 text-center text-base text-muted-foreground">
                     Henüz teslimat kaydı yok.
                   </TableCell>
                 </TableRow>
@@ -291,10 +293,10 @@ export default async function RaporlarPage() {
                     <TableRow key={supplier.name}>
                       <TableCell className="text-base font-semibold">{supplier.name}</TableCell>
                       <TableCell className="text-base">{supplier.total}</TableCell>
-                      <TableCell className="text-base text-emerald-700">{supplier.delivered}</TableCell>
-                      <TableCell className="text-base text-red-600">{supplier.delayed}</TableCell>
+                      <TableCell className="text-base text-success">{supplier.delivered}</TableCell>
+                      <TableCell className="text-base text-danger">{supplier.delayed}</TableCell>
                       <TableCell className="flex items-center gap-1 text-base font-semibold">
-                        <TrendingUp className="size-4 text-slate-400" />%{successRate}
+                        <TrendingUp className="size-4 text-muted-foreground" />%{successRate}
                       </TableCell>
                     </TableRow>
                   )

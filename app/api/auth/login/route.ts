@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server"
 
 import { AUTH_CONFIG_ERROR_MESSAGE, isSupabaseConfigError } from "@/lib/auth/messages"
+import { checkRateLimit, getRateLimitRemaining } from "@/lib/rate-limiter"
 import { createClient } from "@/lib/supabase/server"
 
 type LoginBody = {
   email?: string
   password?: string
 }
+
+const LOGIN_LOCKOUT_ATTEMPTS = 5
+const LOGIN_LOCKOUT_WINDOW = 15 * 60 * 1000
 
 function mapAuthErrorToTurkish(message: string) {
   const normalized = message.toLowerCase()
@@ -38,6 +42,19 @@ export async function POST(request: Request) {
 
     if (!email || !password) {
       return NextResponse.json({ message: "E-posta ve şifre alanları zorunludur." }, { status: 400 })
+    }
+
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+    const rateLimitKey = `login:${email.toLowerCase()}:${ip}`
+
+    if (!checkRateLimit(rateLimitKey, LOGIN_LOCKOUT_ATTEMPTS, LOGIN_LOCKOUT_WINDOW)) {
+      const remaining = getRateLimitRemaining(rateLimitKey, LOGIN_LOCKOUT_ATTEMPTS)
+      return NextResponse.json(
+        {
+          message: `Çok fazla başarısız giriş denemesi. Hesap 15 dakika süreyle kilitlendi. Kalan deneme: ${remaining}`,
+        },
+        { status: 429 },
+      )
     }
 
     const supabase = await createClient()

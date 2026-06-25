@@ -78,14 +78,13 @@ export default function SignupPage() {
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white to-slate-100 px-4 py-10">
       <div className="grid w-full max-w-5xl items-center gap-8 md:grid-cols-2">
         <section className="hidden space-y-4 md:block">
-          <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600">
+          <p className="inline-flex rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-muted-foreground">
             EsnafAsistan
           </p>
-          <h1 className="text-4xl font-semibold text-slate-900">Yeni hesabınızı açın, panelinizi hemen kullanın.</h1>
-          <p className="text-lg text-slate-600">E-posta ve şifreyle kayıt olun, ardından doğrudan dükkan paneline geçin.</p>
+          <h1 className="text-4xl font-semibold text-foreground">Yeni hesabınızı açın, panelinizi hemen kullanın.</h1>
+          <p className="text-lg text-muted-foreground">E-posta ve şifreyle kayıt olun, ardından doğrudan dükkan paneline geçin.</p>
         </section>
-
-        <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
+        <Card className="border-border shadow-card">
           <CardHeader className="space-y-2">
             <CardTitle className="text-2xl">Kayıt Ol</CardTitle>
             <p className="text-base text-muted-foreground">Yeni bir hesap oluşturarak EsnafAsistan&apos;ı kullanmaya başla.</p>
@@ -98,7 +97,7 @@ export default function SignupPage() {
                   E-posta
                 </Label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3 top-3.5 size-5 text-slate-400" />
+                  <Mail className="pointer-events-none absolute left-3 top-3.5 size-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -116,7 +115,7 @@ export default function SignupPage() {
                   Şifre
                 </Label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3 top-3.5 size-5 text-slate-400" />
+                  <Lock className="pointer-events-none absolute left-3 top-3.5 size-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
@@ -134,7 +133,7 @@ export default function SignupPage() {
                   Şifre Tekrar
                 </Label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3 top-3.5 size-5 text-slate-400" />
+                  <Lock className="pointer-events-none absolute left-3 top-3.5 size-5 text-muted-foreground" />
                   <Input
                     id="confirm-password"
                     type="password"
@@ -163,9 +162,9 @@ export default function SignupPage() {
               </Button>
             </form>
 
-            <div className="text-center text-base text-slate-600">
+            <div className="text-center text-base text-muted-foreground">
               Zaten hesabın var mı?{" "}
-              <Link href="/" className="font-semibold text-slate-900 underline underline-offset-4">
+              <Link href="/" className="font-semibold text-foreground underline underline-offset-4">
                 Giriş Yap
               </Link>
             </div>

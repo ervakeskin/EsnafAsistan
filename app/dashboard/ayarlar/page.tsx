@@ -1,4 +1,5 @@
 import { Mail, Store } from "lucide-react"
+import { Breadcrumb } from "@/components/dashboard/breadcrumb"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
 import { ShopNameForm, EmailForwardingSection, KnownSendersSection, WarehouseSection } from "./form-client"
@@ -31,9 +32,10 @@ export default async function AyarlarPage() {
 
   return (
     <section className="space-y-6">
+      <Breadcrumb items={[{ label: "Ana Sayfa", href: "/dashboard" }, { label: "Ayarlar" }]} />
       <div>
-        <h1 className="text-3xl font-semibold text-slate-900">Ayarlar</h1>
-        <p className="mt-2 text-base text-slate-600">Dükkan bilgilerini, e-posta yönlendirmeyi ve depoları buradan yönet.</p>
+        <h1 className="text-3xl font-semibold text-foreground">Ayarlar</h1>
+        <p className="mt-2 text-base text-muted-foreground">Dükkan bilgilerini, e-posta yönlendirmeyi ve depoları buradan yönet.</p>
       </div>
 
       <Card>

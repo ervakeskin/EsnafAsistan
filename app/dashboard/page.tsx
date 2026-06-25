@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import { Breadcrumb } from "@/components/dashboard/breadcrumb"
 import { DashboardCalendarWidget } from "@/components/dashboard/dashboard-calendar-widget"
 import { PageShell } from "@/components/dashboard/page-shell"
+import { QuickActions } from "@/components/dashboard/quick-actions"
 import { RealtimeListener } from "@/components/dashboard/realtime-listener"
 import { createClient } from "@/lib/supabase/server"
 
@@ -135,6 +137,8 @@ export default async function DashboardPage() {
         tables={["products", "sales", "warehouses", "reminders"]}
       />
 
+      <Breadcrumb items={[{ label: "Ana Sayfa" }]} />
+
       <PageShell
         title="Dükkan Özeti"
         description="Stok, depolar ve günlük operasyonları tek ekrandan canlı takip et."
@@ -156,6 +160,8 @@ export default async function DashboardPage() {
           },
         ]}
       />
+
+      <QuickActions />
 
       <DashboardCalendarWidget reminders={reminderRows} />
     </section>

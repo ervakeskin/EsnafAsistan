@@ -34,10 +34,10 @@ export function DeliveryStatusForm({ deliveryId, status, label }: { deliveryId: 
         {isPending ? "İşleniyor..." : label}
       </Button>
       {state?.message && !state.success && (
-        <p className="mt-1 text-xs text-red-600">{state.message}</p>
+        <p className="mt-1 text-xs text-danger">{state.message}</p>
       )}
       {state?.message && state.success && (
-        <p className="mt-1 text-xs text-green-600">✓ {state.message}</p>
+        <p className="mt-1 text-xs text-success">✓ {state.message}</p>
       )}
     </form>
   )
@@ -60,7 +60,7 @@ export function DeleteDeliveryForm({ deliveryId }: { deliveryId: string }) {
         Sil
       </Button>
       {state?.message && !state.success && (
-        <p className="mt-1 text-xs text-red-600">{state.message}</p>
+        <p className="mt-1 text-xs text-danger">{state.message}</p>
       )}
     </form>
   )

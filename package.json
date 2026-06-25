@@ -9,7 +9,13 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:security": "vitest run tests/security.test.ts",
+    "test:integration": "vitest run tests/integration.test.ts",
+    "test:lighthouse": "lighthouse http://localhost:3000 --view",
+    "lint:strict": "next lint && tsc --noEmit",
+    "security:audit": "npm audit"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -29,6 +35,7 @@
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

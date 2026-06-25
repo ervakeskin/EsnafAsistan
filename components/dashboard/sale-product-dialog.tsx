@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { ActionResult } from "@/app/dashboard/stok/actions"
 
 type SaleProductDialogProps = {
@@ -73,10 +74,10 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
         <form action={formAction} className="space-y-4 px-6 pb-6">
           <input type="hidden" name="product_id" value={product.id} />
 
-          <div className="rounded-lg border bg-slate-50 p-4">
-            <p className="text-sm text-slate-600">Alış Fiyatı (Bilgi)</p>
-            <p className="text-2xl font-semibold text-slate-900">{formatPrice(product.purchasePrice)}</p>
-            <p className="mt-1 text-sm text-slate-600">Stokta {product.quantity} {product.unit}</p>
+          <div className="rounded-lg border bg-muted p-4">
+            <p className="text-sm text-muted-foreground">Alış Fiyatı (Bilgi)</p>
+            <p className="text-2xl font-semibold text-foreground">{formatPrice(product.purchasePrice)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">Stokta {product.quantity} {product.unit}</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -96,6 +97,20 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor={`payment_type-${product.id}`} className="text-base">Ödeme Türü</Label>
+            <Select name="payment_type" defaultValue="nakit">
+              <SelectTrigger id={`payment_type-${product.id}`} className="h-12 w-full text-base">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nakit" className="text-base">Nakit</SelectItem>
+                <SelectItem value="kart" className="text-base">Kart</SelectItem>
+                <SelectItem value="havale" className="text-base">Havale/EFT</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor={`note-${product.id}`} className="text-base">Not</Label>
             <Input id={`note-${product.id}`} name="note" className="h-12 text-base" placeholder="Örn: Peşin ödendi" />
           </div>
@@ -107,7 +122,7 @@ export function SaleProductDialog({ product, action }: SaleProductDialogProps) {
           </Button>
 
           {state?.message && !state.success && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.message}</p>
+            <p className="rounded-md bg-danger-bg px-3 py-2 text-sm text-danger">{state.message}</p>
           )}
         </form>
       </DialogContent>

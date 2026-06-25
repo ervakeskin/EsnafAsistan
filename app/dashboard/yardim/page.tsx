@@ -1,5 +1,6 @@
 import { AlertTriangle, Lightbulb, Sparkles, TrendingUp } from "lucide-react"
 
+import { Breadcrumb } from "@/components/dashboard/breadcrumb"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
 
@@ -112,9 +113,10 @@ export default async function YardimPage() {
 
   return (
     <section className="space-y-6">
+      <Breadcrumb items={[{ label: "Ana Sayfa", href: "/dashboard" }, { label: "Yardım" }]} />
       <div>
-        <h1 className="text-3xl font-semibold text-slate-900">Yardım ve Öneriler</h1>
-        <p className="mt-2 text-base text-slate-600">
+        <h1 className="text-3xl font-semibold text-foreground">Yardım ve Öneriler</h1>
+        <p className="mt-2 text-base text-muted-foreground">
           Verilerine göre hazırlanan akıllı ipuçları ve uygulamayı verimli kullanma rehberi.
         </p>
       </div>
@@ -122,13 +124,13 @@ export default async function YardimPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
-            <Sparkles className="size-5 text-violet-500" />
+            <Sparkles className="size-5 text-accent-foreground" />
             Sana Özel Öneriler
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {suggestions.length === 0 ? (
-            <p className="rounded-lg border bg-slate-50 p-3 text-base text-slate-600">
+            <p className="rounded-lg border bg-muted p-3 text-base text-muted-foreground">
               Şu an her şey yolunda görünüyor. 👍
             </p>
           ) : (
@@ -141,7 +143,7 @@ export default async function YardimPage() {
                   <item.icon className="size-4" />
                   {item.title}
                 </p>
-                <p className="mt-1 text-sm text-slate-600">{item.detail}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
               </div>
             ))
           )}
@@ -154,12 +156,12 @@ export default async function YardimPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {staticTips.map((item, index) => (
-            <div key={index} className={`rounded-lg border border-l-4 bg-white p-3 ${TONE_STYLES[item.tone]}`}>
+            <div key={index} className={`rounded-lg border border-l-4 bg-card p-3 ${TONE_STYLES[item.tone]}`}>
               <p className="flex items-center gap-2 text-base font-semibold">
                 <item.icon className="size-4" />
                 {item.title}
               </p>
-              <p className="mt-1 text-sm text-slate-600">{item.detail}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
             </div>
           ))}
         </CardContent>

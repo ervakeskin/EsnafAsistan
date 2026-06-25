@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import {
@@ -20,6 +21,11 @@ export function WarehouseFilter({ value, options }: WarehouseFilterProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const selectedLabel = useMemo(
+    () => options.find((o) => o.value === value)?.label ?? "Depo seçin",
+    [options, value],
+  )
+
   function onValueChange(nextValue: string | null) {
     if (!nextValue) return
     const params = new URLSearchParams(searchParams.toString())
@@ -32,7 +38,7 @@ export function WarehouseFilter({ value, options }: WarehouseFilterProps) {
       <p className="text-base font-medium">Depo Filtresi</p>
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className="h-12 w-full text-base sm:w-60" size="default">
-          <SelectValue />
+          <SelectValue placeholder={selectedLabel} />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (

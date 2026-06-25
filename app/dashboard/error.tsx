@@ -16,15 +16,15 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-xl">
-            <AlertTriangle className="size-5 text-amber-600" />
+            <AlertTriangle className="size-5 text-warning" />
             Dashboard yüklenemedi
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-base text-slate-700">
-            Sayfa yüklenirken beklenmeyen bir sorun oluştu. Lütfen tekrar dene.
+          <p className="text-base text-muted-foreground">
+            {error?.message ?? "Beklenmeyen bir hata oluştu."}
           </p>
-          <p className="rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate-600">
+          <p className="rounded-lg border bg-muted px-3 py-2 text-sm text-muted-foreground">
             Hata detayı: {error.message || "Bilinmeyen hata"}
           </p>
           <Button type="button" className="h-11 text-base" onClick={reset}>

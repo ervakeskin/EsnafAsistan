@@ -1,8 +1,10 @@
-import { Sparkles } from "lucide-react"
+import { Settings2, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { AddCenterFab } from "@/components/dashboard/add-center-fab"
+import { BackButton } from "@/components/dashboard/back-button"
+import { BottomNavigation } from "@/components/dashboard/bottom-navigation"
 import { Button } from "@/components/ui/button"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { isSupabaseConfigError } from "@/lib/auth/messages"
@@ -40,10 +42,10 @@ export default async function DashboardLayout({
   const warehouses = (warehouseRows ?? []) as Array<{ id: string; name: string }>
 
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
+    <div className="min-h-screen bg-background lg:flex">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-base focus:font-medium focus:text-slate-900 focus:shadow-lg focus:ring-2 focus:ring-slate-400"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-card focus:px-4 focus:py-3 focus:text-base focus:font-medium focus:text-foreground focus:shadow-lg focus:ring-2 focus:ring-ring"
       >
         İçeriğe atla
       </a>
@@ -52,13 +54,22 @@ export default async function DashboardLayout({
 
         <main id="main-content" className="flex-1">
           <div className="mx-auto w-full max-w-7xl p-4 md:p-6 lg:p-8">
-            <div className="mb-5 flex items-center justify-end gap-3">
-              <Link href="/dashboard/yardim">
-                <Button variant="gradient" size="lg" className="h-11 text-base">
-                  <Sparkles className="size-4" />
-                  Yardım / AI Önerisi
-                </Button>
-              </Link>
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <BackButton />
+              <div className="flex items-center gap-2">
+                <Link href="/dashboard/hesap-ayarlari">
+                  <Button variant="outline" size="lg" className="h-11 text-base">
+                    <Settings2 className="size-4" />
+                    Hesap
+                  </Button>
+                </Link>
+                <Link href="/dashboard/yardim">
+                  <Button variant="gradient" size="lg" className="h-11 text-base">
+                    <Sparkles className="size-4" />
+                    Yardım
+                  </Button>
+                </Link>
+              </div>
             </div>
             <div className="page-enter">
               {children}
@@ -66,6 +77,7 @@ export default async function DashboardLayout({
           </div>
         </main>
       <AddCenterFab warehouses={warehouses} />
+      <BottomNavigation />
     </div>
   )
 }

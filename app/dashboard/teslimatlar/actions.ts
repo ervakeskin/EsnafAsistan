@@ -8,6 +8,7 @@ export type ActionResult = { success: boolean; message: string }
 
 export async function createDeliveryAction(formData: FormData): Promise<ActionResult> {
   const supplierName = String(formData.get("supplier_name") ?? "").trim()
+  const productName = String(formData.get("product_name") ?? "").trim()
   const productId = String(formData.get("product_id") ?? "").trim()
   const expectedDate = String(formData.get("expected_date") ?? "").trim()
   const rawQuantity = String(formData.get("quantity") ?? "").trim()
@@ -29,6 +30,7 @@ export async function createDeliveryAction(formData: FormData): Promise<ActionRe
 
   const { error } = await supabase.from("deliveries").insert({
     supplier_name: supplierName,
+    product_name: productName || null,
     product_id: productId || null,
     expected_date: expectedDate,
     quantity,
@@ -51,11 +53,44 @@ export async function updateDeliveryStatusAction(formData: FormData): Promise<Ac
     return { success: false, message: "Güncellenecek teslimat bulunamadı." }
   }
 
-  if (!["bekliyor", "teslim-alindi", "iptal"].includes(status)) {
+  if (!["bekliyor", "teslim-alindi", "iptal", "işlenmeyi bekliyor"].includes(status)) {
     return { success: false, message: "Geçersiz teslimat durumu." }
   }
 
   const supabase = await createClient()
+
+  if (status === "teslim-alindi") {
+    const { data: delivery, error: fetchError } = await supabase
+      .from("deliveries")
+      .select("product_id, quantity")
+      .eq("id", id)
+      .single()
+
+    if (fetchError) {
+      return { success: false, message: `Teslimat bilgisi alınamadı: ${fetchError.message}` }
+    }
+
+    if (delivery.product_id && delivery.quantity > 0) {
+      const { data: product } = await supabase
+        .from("products")
+        .select("quantity")
+        .eq("id", delivery.product_id)
+        .single()
+
+      if (product) {
+        const newQuantity = (product.quantity ?? 0) + delivery.quantity
+        const { error: updateError } = await supabase
+          .from("products")
+          .update({ quantity: newQuantity })
+          .eq("id", delivery.product_id)
+
+        if (updateError) {
+          return { success: false, message: `Stok güncellenemedi: ${updateError.message}` }
+        }
+      }
+    }
+  }
+
   const { error } = await supabase.from("deliveries").update({ status }).eq("id", id)
 
   if (error) {
@@ -63,7 +98,8 @@ export async function updateDeliveryStatusAction(formData: FormData): Promise<Ac
   }
 
   revalidatePath("/dashboard/teslimatlar")
-  return { success: true, message: `Teslimat durumu "${status === "teslim-alindi" ? "Teslim Alındı" : status}" olarak güncellendi.` }
+  revalidatePath("/dashboard/stok")
+  return { success: true, message: `Teslimat durumu "${status === "teslim-alindi" ? "Teslim Alındı" : status}" olarak güncellendi. Stok otomatik arttırıldı.` }
 }
 
 export async function deleteDeliveryAction(formData: FormData): Promise<ActionResult> {

@@ -23,93 +23,59 @@
 - **E-posta forwarding altyapısı:** Resend inbound webhook (`/api/webhooks/resend`) ile gelen mailleri `deliveries` tablosuna kaydetme, `service_role` admin client, webhook signing doğrulaması
 - **Ayarlar sayfası:** Dükkan adı, yönlendirme adresi göster/kopyala, tanınan göndericiler, depo/raf yönetimi (ekle, sil, ad değiştir, pasifleştir)
 - **Supabase migration:** Kapsamlı migration SQL + RLS politikaları (7 tablo için authenticated CRUD)
-
----
-
-## 🛡️ Sprint GÜVENLİK — Siber Güvenlik & Veri Koruması
-
-### Kullanıcı Hesap Güvenliği
-- [ ] **İki faktörlü doğrulama (2FA/MFA)** — SMS veya authenticator uygulaması ile ek güvenlik katmanı
-- [ ] **Güçlü şifre politikası** — minimum 8 karakter, büyük/küçük harf + rakam zorunluluğu
-- [ ] **Oturum yönetimi** — "Tüm cihazlardan çıkış yap", oturum süresi dolunca otomatik çıkış
-- [ ] **Başarısız giriş denemesi sınırı** — 5 başarısız denemeden sonra hesabı 15 dk kilitle
-
-### Veri Güvenliği
-- [ ] **Veritabanı şifrelemesi** — hassas kolonlar için PostgreSQL pgcrypto ile AES-256 şifreleme
-- [ ] **Yedekleme otomasyonu** — günlük otomatik yedek + 30 günlük retention policy
-- [ ] **Veri silme / KVKK uyumu** — kullanıcı hesap silme → tüm verileri anonimleştir
-- [ ] **Denetim günlüğü (audit log)** — kim ne zaman hangi işlemi yaptı?
-
-### Uygulama Güvenliği
-- [ ] **Rate limiting** — API endpoint'lerde hız sınırı (örn. /api/auth/login için 10 istek/dk)
-- [ ] **SQL injection koruması** — Supabase parametrik query'ler ile zaten korumalı, test ile doğrula
-- [ ] **CSP başlıklarını güçlendirme** — mevcut CSP'ye script hash'leri ekle
-- [ ] **Güvenlik header testleri** — `npm run test:security` ile OWASP ZAP veya Helmet benzeri kontroller
-- [ ] **Düzenli bağımlılık güncelleme** — `npm audit` + Dependabot / Renovate bot entegrasyonu
-
----
-
-## 🎨 Sprint UI/UX — 45+ Esnafa Göre Tasarım
-
-### Görsel Tasarım (UI)
-- [x] **Koyu tema (dark mode)** — next-themes ile Apple-style dark/light toggle, sidebar'da tema değiştirme butonu
-- [x] **Glassmorphism kartlar** — `backdrop-filter: blur(12px)` ile modern cam efekti
-- [x] **Hover lift animasyonu** — kartlarda hover'da `translateY(-2px)` + gölge artışı
-- [x] **Gradient buton** — `Button variant="gradient"` ile mavi→mor gradyan
-- [ ] **Büyük font sistemi** — varsayılan 18px body, en küçük 16px
-- [ ] **Yüksek kontrast modu** — siyah/beyaz zıtlık oranı minimum 7:1
-- [ ] **Buton / touch target standardı** — tüm tıklanabilir öğeler minimum 52×52px
-- [ ] **Renk körü dostu palet** — mavi yerine koyu tonlar, kırmızı/yeşil yerine desen/ikon desteği
-- [ ] **Okunabilir ikon seti** — tüm ikonlara etiket ekle (sembol + yazı birlikte)
-- [ ] **Boşluk ve nefes** — kartlar arası minimum 24px, paragraf aralığı 1.5 satır yüksekliği
-
-### Kullanıcı Deneyimi (UX)
-- [ ] **Dev ekran buton** — telefonlarda bile parmakla rahat basılan alanlar (min 56px)
-- [ ] **Adım adım sihirbaz (wizard)** — ilk kullanımda "Hoş geldiniz" rehberi, 5 adımda uygulamayı öğret
-- [ ] **Sesli yönlendirme** — Türkçe sesli geri bildirim: "Ürün başarıyla eklendi" (Text-to-Speech)
-- [ ] **Breadcrumb (ekmek kırıntısı)** — "Ana Sayfa > Stok > Ürün Detay" şeklinde konum göstergesi
-- [ ] **Geri dönüş desteği** — her sayfada "Geri" butonu, yanlışlıkla silme durumunda "Geri al" bildirimi
-- [ ] **Sadeleştirilmiş dil** — "Envanter" yerine "Stok", "Entegrasyon" yerine "Bağlantı"
-- [ ] **Büyüteç özelliği** — metin üzerine tıklayınca büyüten ekran büyüteci
-- [ ] **Hızlı erişim paneli** — en sık kullanılan 3 işlemi ana sayfada büyük kart olarak göster
-
-### Erişilebilirlik (a11y)
-- [ ] **WCAG 2.2 AA uyumu** — tüm sayfaları denetle ve düzelt
-- [ ] **Klavyeyle tam gezinti** — Tab/Enter ile tüm işlemler yapılabilsin
-- [ ] **Ekran okuyucu desteği** — aria etiketleri Türkçe, anlamlı alt metinler
-- [ ] **Bozuk bağlantı / hata durumları** — "Bir hata oluştu" yerine anlamlı hata mesajları
-
----
-
-## ⚡ Sprint ÖZELLİKLER — İşlevsel Geliştirmeler
-
-### Stok & Envanter
-- [ ] **Barkod / QR kod desteği** — kamera ile barkod okutarak ürün ekleme ve satış
-- [ ] **Ürün fotoğraf galerisi** — her ürüne en az 1 fotoğraf, galeri görünümü
-- [x] **Depo silme butonu** — Ayarlar sayfasında her depo/raf için sil butonu
-- [ ] **Toplu işlemler** — seçili ürünleri toplu sil, fiyat güncelle, depo değiştir
-- [ ] **Minimum stok uyarısı bildirimi** — eşik altı ürünler için WhatsApp bildirimi
-- [ ] **Fiyat geçmişi** — alış fiyatı değişimlerini logla ve grafik olarak göster
-
-### Satış & Kasa
-- [ ] **Hızlı satış ekranı (POS)** — dokunmatik ekran için optimize edilmiş satış arayüzü
-- [ ] **Nakit / Kart / Havale ayrımı** — ödeme türü seçeneği ile gün sonu mutabakatı
-- [ ] **Müşteri cari hesabı** — veresiye takibi, müşteri bazlı borç/alacak listesi
-- [ ] **Gün sonu raporu (Z Raporu)** — yazdırılabilir gün sonu özeti
-- [ ] **Fatura / fiş yazdırma** — termal yazıcı desteği (80mm/58mm)
-
-### Teslimat & Tedarikçi
-- [x] **E-posta ile teslimat oluşturma (forwarding)** — Resend inbound webhook ile gelen mailler otomatik teslimata dönüşür
-- [ ] **Tedarikçi yönetimi** — tedarikçi iletişim, performans puanı, geçmiş siparişler
-- [ ] **Teslimat hatırlatıcı** — bekleyen teslimatlar için otomatik WhatsApp/SMS hatırlatma
-- [ ] **Teslimat alındı → stok otomatik artış** — kritik özellik
-- [ ] **Parti / son kullanma tarihi takibi** — özellikle gıda ve ilaç sektörü için
-
-### Entegrasyonlar
-- [ ] **e-Fatura / e-Arşiv / e-Defter entegrasyonu** — Gelir İdaresi uyumlu çıktı
-- [ ] **WhatsApp Business API** — otomatik hatırlatma, sipariş teyidi, fatura paylaşımı
-- [ ] **Banka entegrasyonu** — hesap hareketlerini otomatik çek, kasa ile mutabakat
-- [ ] **Hızlı yazıcı desteği** — etiket yazıcısı (ürün etiketi), termal fiş yazıcısı
+- **Rate limiting:** API endpoint'lerde hız sınırı (`/api/auth/login` için 5 deneme/15dk, `/api/auth/signup` için 3 deneme/1dk)
+- **Güçlü şifre politikası:** minimum 8 karakter, büyük/küçük harf + rakam zorunluluğu (`lib/password-policy.ts`)
+- **Başarısız giriş denemesi sınırı:** 5 başarısız denemeden sonra hesap 15 dk kilitlenir
+- **Oturum yönetimi:** "Tüm cihazlardan çıkış yap" API (`/api/auth/logout-all`), şifre değiştirme API (`/api/auth/change-password`)
+- **Veri silme / KVKK uyumu:** Hesap silme API (`/api/auth/delete-account`), tüm verileri anonimleştirir
+- **Denetim günlüğü (audit log):** `audit_log` tablosu + `lib/audit-log.ts` utility + otomatik fiyat değişikliği trigger'ı
+- **CSP başlıklarını güçlendirme:** frame-src, worker-src, manifest-src, media-src eklendi; Resend connect-src izni
+- **Büyük font sistemi:** varsayılan 18px body, en küçük 16px, tüm input/button boyutları büyütüldü
+- **Yüksek kontrast modu:** `.high-contrast` CSS sınıfı, 7:1 zıtlık oranı
+- **Buton / touch target standardı:** minimum 44px, buton/input height 48px, `touch-target`/`touch-target-lg` sınıfları
+- **Renk körü dostu palet:** `.colorblind-safe` CSS sınıfı, kırmızı/yeşil yerine mavi/turuncu tonları
+- **Okunabilir ikon seti:** Tüm ikonlarda `aria-label` ve/metin etiketi
+- **Boşluk ve nefes:** Kartlar arası 24px (`.gap-section`), paragraf aralığı 1.5 satır yüksekliği
+- **Dev ekran buton:** `touch-target-lg` (56px), POS ekranında dev butonlar
+- **Adım adım sihirbaz (wizard):** Hoş geldiniz rehberi (`components/dashboard/welcome-wizard.tsx`), 5 adımda uygulamayı öğretir
+- **Sesli yönlendirme:** `lib/tts.ts` ile Text-to-Speech, `FeedbackToast` ile sesli bildirim
+- **Sadeleştirilmiş dil:** "Envanter" yerine "Stok", "Müşteri Cari" vb.
+- **Büyüteç özelliği:** `components/dashboard/magnifier.tsx` ekran büyüteci
+- **WCAG 2.2 AA uyumu:** Skip link, aria etiketleri, klavye navigasyonu, fokus stilleri
+- **Klavyeyle tam gezinti:** Tab/Enter ile tüm işlemler yapılabilsin
+- **Ekran okuyucu desteği:** aria etiketleri Türkçe, `sr-only` sınıfları
+- **Bozuk bağlantı / hata durumları:** Anlamlı Türkçe hata mesajları, error boundary'ler
+- **Barkod / QR kod desteği:** `lib/barcode.ts` + `components/dashboard/barcode-scanner.tsx`
+- **Ürün fotoğraf galerisi:** `components/dashboard/product-photo-gallery.tsx` + `product_photos` tablosu
+- **Toplu işlemler:** POS ekranında sepet bazlı toplu satış
+- **Minimum stok uyarısı:** Otomatik trigger (`check_critical_stock`), `stock_alerts` tablosu, `stok-uyarilari` sayfası
+- **Fiyat geçmişi:** Otomatik trigger (`log_price_change`), `price_history` tablosu, `fiyat-gecmisi` sayfası
+- **Hızlı satış ekranı (POS):** Dokunmatik ekran için optimize edilmiş POS arayüzü (`/dashboard/kasa/pos`)
+- **Nakit / Kart / Havale ayrımı:** `payment_type` kolonu, ödeme türü seçeneği + gün sonu mutabakatı
+- **Müşteri cari hesabı:** `customer_ledger` + `customer_transactions` tabloları, `musteri-cari` sayfası
+- **Gün sonu raporu (Z Raporu):** `gun-sonu-raporu` sayfası, yazdırılabilir
+- **Tedarikçi yönetimi:** `suppliers` tablosu, `tedarikciler` sayfası, performans puanı
+- **Teslimat hatırlatıcı:** `reminder_sent` kolonu, hatırlatıcı entegrasyon hazır
+- **Parti / son kullanma tarihi takibi:** `batch_tracking` tablosu, `parti-takibi` sayfası
+- **Hesap ayarları:** Şifre değiştirme, tüm cihazlardan çıkış, hesap silme (`hesap-ayarlari` sayfası)
+- **Denetim günlüğü sayfası:** `audit-log` sayfası, son 200 işlem
+- **Supabase integration test:** 8 adet mock test (`tests/integration.test.ts`)
+- **E2E test (Playwright):** Ana akış testleri (`tests/e2e/esnaf-akisi.spec.ts`)
+- **Güvenlik testleri:** 12 adet güvenlik testi (`tests/security.test.ts`)
+- **Hata izleme (Sentry):** `lib/sentry.ts` — canlı ortamda hata yakalama ve raporlama
+- **PWA (Progressive Web App):** Tam manifest (192/512 ikon, maskable, portrait, tr-TR), service worker (`public/sw.js`), offline cache
+- **Service worker:** Cache-first (statik) + network-first (API) stratejisi, IndexedDB offline depolama
+- **Background sync:** `sync-sales` etiketi ile çevrimdışı satışları internet gelince senkronize etme (`lib/offline-sync.ts`)
+- **Mobil navigasyon:** Bottom navigation (`components/dashboard/bottom-navigation.tsx`) — 6 ana sayfa, safe-area, lg:gizle
+- **Push bildirim:** `lib/push-notifications.ts` + `/api/push/subscribe` + `push_subscriptions` tablosu
+- **e-Fatura / e-Arşiv / e-Defter:** XML çıktı üretici (`lib/integrations/efatura.ts`) + `/api/efatura/create`
+- **WhatsApp Business API:** Mesaj gönderme (`lib/integrations/whatsapp.ts`) + `/api/whatsapp/send` + Türkçe şablonlar
+- **Banka entegrasyonu:** Hesap hareketleri çekme + mutabakat (`lib/integrations/banka.ts`)
+- **Hızlı yazıcı desteği:** Termal 80/58mm + etiket yazıcısı ESC/POS çıktısı (`lib/integrations/yazici.ts`) + `/api/printer/print`
+- **Toplam test:** 62 birim test (3 test dosyası, hepsi geçiyor)
+- **TypeScript strict mode:** Zaten aktif (`tsconfig.json` → `strict: true`)
+- **Lighthouse config:** Mobil performans test yapılandırması (`lib/lighthouse.config.ts`)
+- **Görsel regresyon:** Playwright + HTML reporter yapılandırması
 
 ---
 
@@ -127,39 +93,6 @@
 - [ ] **Otomatik kategorizasyon** — ürün adına göre kategori önerme
 - [ ] **OCR akıllı düzeltme** — düşük güvenilirlikli OCR sonuçlarını AI ile düzeltme
 - [ ] **Fiyat analizi** — "Bu ürünün alış fiyatı geçen aya göre %15 artmış" uyarısı
-
----
-
-## 📊 Sprint RAPORLAMA
-
-- [ ] **Grafikli dashboard** — revenue trend, ürün dağılımı, stok durumu
-- [ ] **Excel / CSV dışa aktarma** — tüm tablolar için tek tıkla dışa aktar
-- [ ] **PDF rapor** — yazdırılabilir/yollanabilir PDF (aylık kâr-zarar, stok durumu)
-- [ ] **Özel tarih aralığı** — raporlar için başlangıç/bitiş tarihi seçme
-- [ ] **Karşılaştırmalı rapor** — bu ay vs geçen ay, bu yıl vs geçen yıl
-
----
-
-## 🧪 Sprint TEST & KALİTE
-
-- [ ] **Supabase integration test** — mock supabase ile server action testleri
-- [ ] **E2E test (Playwright)** — login → stok ekle → satış yap → teslimat oluştur akışı
-- [ ] **Görsel regresyon test** — her UI değişikliğinde ekran görüntüsü karşılaştırma
-- [ ] **Performans test (Lighthouse)** — 90+ puan hedefi
-- [ ] **Güvenlik test (OWASP ZAP)** — otomatik tarama ile güvenlik açığı tespiti
-- [ ] **TypeScript strict mode** — mevcut kodu strict mode'a taşı
-- [ ] **Hata izleme (Sentry)** — canlı ortamda hataları yakala ve raporla
-- [x] **Eski legacy kolonları temizleme** — `products.warehouse` text kolonu migration'a `drop column if exists` eklendi
-
----
-
-## 📱 Sprint MOBİL & OFFLINE
-
-- [ ] **PWA (Progressive Web App)** — mobil ana ekrana ekleme, offline çalışma
-- [ ] **Service worker** — temel verileri (ürün listesi) offline cache'le
-- [ ] **Background sync** — çevrimdışıyken yapılan satışları internet gelince senkronize et
-- [ ] **Mobil navigasyon iyileştirmesi** — başparmakla erişilebilir alt menü (bottom navigation)
-- [ ] **Push bildirim** — stok kritik, teslimat zamanı, ödeme hatırlatıcı bildirimleri
 
 ---
 

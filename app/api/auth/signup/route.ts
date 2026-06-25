@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 
 import { AUTH_CONFIG_ERROR_MESSAGE, isSupabaseConfigError } from "@/lib/auth/messages"
+import { validatePassword } from "@/lib/password-policy"
+import { checkRateLimit } from "@/lib/rate-limiter"
 import { createClient } from "@/lib/supabase/server"
 
 type SignupBody = {
@@ -16,7 +18,7 @@ function mapSignupErrorToTurkish(message: string) {
   }
 
   if (normalized.includes("password should be at least")) {
-    return "Şifre en az 6 karakter olmalıdır."
+    return "Şifre en az 8 karakter olmalıdır."
   }
 
   if (normalized.includes("invalid email")) {
@@ -44,8 +46,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "E-posta ve şifre alanları zorunludur." }, { status: 400 })
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ message: "Şifre en az 6 karakter olmalıdır." }, { status: 400 })
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+    if (!checkRateLimit(`signup:${ip}`, 3, 60000)) {
+      return NextResponse.json(
+        { message: "Çok fazla kayıt denemesi yapıldı. Lütfen 1 dakika sonra tekrar dene." },
+        { status: 429 },
+      )
+    }
+
+    const passwordCheck = validatePassword(password)
+    if (!passwordCheck.valid) {
+      return NextResponse.json({ message: passwordCheck.message }, { status: 400 })
     }
 
     const supabase = await createClient()

@@ -1,3 +1,4 @@
+import { Breadcrumb } from "@/components/dashboard/breadcrumb"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -16,6 +17,7 @@ type SaleRow = {
   purchase_price: number
   customer_name: string | null
   note: string | null
+  payment_type: string
   sold_at: string
   products: {
     name: string
@@ -68,7 +70,7 @@ export default async function KasaPage() {
 
   const { data, error } = await supabase
     .from("sales")
-    .select("id, quantity, sale_price, purchase_price, customer_name, note, sold_at, products(name, unit)")
+    .select("id, quantity, sale_price, purchase_price, customer_name, note, payment_type, sold_at, products(name, unit)")
     .gte("sold_at", start)
     .lt("sold_at", end)
     .order("sold_at", { ascending: false })
@@ -87,9 +89,10 @@ export default async function KasaPage() {
 
   return (
     <section className="space-y-6">
+      <Breadcrumb items={[{ label: "Ana Sayfa", href: "/dashboard" }, { label: "Kasa" }]} />
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold text-slate-900">Kasa</h1>
-        <p className="text-base text-slate-600">
+        <h1 className="text-3xl font-semibold text-foreground">Kasa</h1>
+        <p className="text-base text-muted-foreground">
           Satış fiyatını manuel gir, sistem stok düşümünü ve kâr hesabını otomatik yapsın.
         </p>
       </div>
@@ -97,20 +100,20 @@ export default async function KasaPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bugün Kasaya Giren</CardTitle>
+            <CardTitle className="text-base text-muted-foreground">Bugün Kasaya Giren</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold tracking-tight text-slate-900">{formatPrice(todayRevenue)}</p>
+            <p className="text-4xl font-bold tracking-tight text-foreground">{formatPrice(todayRevenue)}</p>
             <p className="mt-2 text-sm text-muted-foreground">Toplam {sales.length} satış işlemi</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-slate-600">Bugün Cepte Kalan</CardTitle>
+            <CardTitle className="text-base text-muted-foreground">Bugün Cepte Kalan</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold tracking-tight text-emerald-700">{formatPrice(todayProfit)}</p>
+            <p className="text-4xl font-bold tracking-tight text-success">{formatPrice(todayProfit)}</p>
             <p className="mt-2 text-sm text-muted-foreground">(Satış - Alış) x Miktar formülü ile hesaplanır</p>
           </CardContent>
         </Card>
@@ -128,6 +131,7 @@ export default async function KasaPage() {
                 <TableHead className="text-base">Ürün</TableHead>
                 <TableHead className="text-base">Müşteri</TableHead>
                 <TableHead className="text-base">Miktar</TableHead>
+                <TableHead className="text-base">Ödeme</TableHead>
                 <TableHead className="text-base">Satış</TableHead>
                 <TableHead className="text-base">Cepte Kalan</TableHead>
               </TableRow>
@@ -135,7 +139,7 @@ export default async function KasaPage() {
             <TableBody>
               {sales.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-8 text-center text-base text-slate-500">
+                  <TableCell colSpan={7} className="py-8 text-center text-base text-muted-foreground">
                     Bugün henüz satış kaydı yok.
                   </TableCell>
                 </TableRow>
@@ -157,12 +161,21 @@ export default async function KasaPage() {
                       <TableCell className="text-base">
                         {sale.quantity} {productInfo?.unit ?? "Adet"}
                       </TableCell>
-                      <TableCell className="text-base font-semibold text-slate-900">
+                      <TableCell className="text-base">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-sm font-medium ${
+                          sale.payment_type === "nakit" ? "bg-success-bg text-success" :
+                          sale.payment_type === "kart" ? "bg-blue-100 text-blue-800" :
+                          "bg-warning-bg text-warning"
+                        }`}>
+                          {sale.payment_type === "nakit" ? "Nakit" : sale.payment_type === "kart" ? "Kart" : "Havale"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-base font-semibold text-foreground">
                         {formatPrice(Number(sale.sale_price) * Number(sale.quantity))}
                       </TableCell>
                       <TableCell
                         className={`text-base font-semibold ${
-                          lineProfit >= 0 ? "text-emerald-700" : "text-red-600"
+                          lineProfit >= 0 ? "text-success" : "text-danger"
                         }`}
                       >
                         {formatPrice(lineProfit)}

@@ -33,9 +33,9 @@ const PRIORITY_LABELS: Record<Reminder["priority"], string> = {
 
 // Önceliğe göre kart sol kenar rengi ve etiket rengi
 const PRIORITY_STYLES: Record<Reminder["priority"], { border: string; badge: string }> = {
-  dusuk: { border: "border-l-4 border-l-emerald-400", badge: "text-emerald-700" },
-  normal: { border: "border-l-4 border-l-amber-400", badge: "text-amber-700" },
-  yuksek: { border: "border-l-4 border-l-red-500", badge: "text-red-700" },
+  dusuk: { border: "border-l-4 border-l-emerald-400", badge: "text-success" },
+  normal: { border: "border-l-4 border-l-amber-400", badge: "text-warning" },
+  yuksek: { border: "border-l-4 border-l-red-500", badge: "text-danger" },
 }
 
 export function DashboardCalendarWidget({ reminders }: Props) {
@@ -217,25 +217,25 @@ export function DashboardCalendarWidget({ reminders }: Props) {
         <div className="space-y-2">
           <p className="text-base font-semibold">Seçili Gün Notları</p>
           {remindersOfDay.length === 0 ? (
-            <p className="rounded-lg border bg-slate-50 p-3 text-sm text-slate-600">
+            <p className="rounded-lg border bg-muted p-3 text-sm text-muted-foreground">
               Bu gün için kayıtlı hatırlatıcı yok.
             </p>
           ) : (
             remindersOfDay.map((item) => (
-              <div
-                key={item.id}
-                className={`rounded-lg border bg-white p-3 ${(PRIORITY_STYLES[item.priority] ?? PRIORITY_STYLES.normal).border}`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-base font-semibold">{item.title}</p>
-                    <p className="text-sm text-slate-600">
-                      {item.category} - Öncelik:{" "}
-                      <span className={`font-medium ${(PRIORITY_STYLES[item.priority] ?? PRIORITY_STYLES.normal).badge}`}>
-                        {PRIORITY_LABELS[item.priority] ?? "Normal"}
-                      </span>
-                    </p>
-                    {item.note ? <p className="mt-1 text-sm text-slate-700">{item.note}</p> : null}
+                <div
+                  key={item.id}
+                  className={`rounded-lg border bg-card p-3 ${(PRIORITY_STYLES[item.priority] ?? PRIORITY_STYLES.normal).border}`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-base font-semibold">{item.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.category} - Öncelik:{" "}
+                        <span className={`font-medium ${(PRIORITY_STYLES[item.priority] ?? PRIORITY_STYLES.normal).badge}`}>
+                          {PRIORITY_LABELS[item.priority] ?? "Normal"}
+                        </span>
+                      </p>
+                      {item.note ? <p className="mt-1 text-sm text-muted-foreground">{item.note}</p> : null}
                   </div>
                   <div className="flex gap-2">
                     <Button

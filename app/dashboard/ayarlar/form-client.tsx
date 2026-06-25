@@ -35,7 +35,7 @@ function FormFeedback({ state, isPending }: { state: ActionResult | null; isPend
   }
   if (!state) return null
   return (
-    <p className={`mt-3 rounded-md px-3 py-2 text-sm ${state.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+    <p className={`mt-3 rounded-md px-3 py-2 text-sm ${state.success ? "bg-success-bg text-success" : "bg-danger-bg text-danger"}`}>
       {state.message}
     </p>
   )
@@ -83,7 +83,7 @@ export function EmailForwardingSection({ forwardingAddress }: { forwardingAddres
     <div className="space-y-4">
       {forwardingAddress ? (
         <>
-          <p className="text-base text-slate-700 leading-relaxed">
+          <p className="text-base text-muted-foreground leading-relaxed">
             Toptancılarının sana gönderdiği sipariş/fatura e-postalarını aşağıdaki adrese
             <strong> yönlendir</strong> (forward et). Sistem gelen mailleri otomatik tanır.
           </p>
@@ -93,7 +93,7 @@ export function EmailForwardingSection({ forwardingAddress }: { forwardingAddres
                 ref={inputRef}
                 readOnly
                 value={forwardingAddress}
-                className="h-12 pr-10 text-base font-mono text-slate-800 bg-white"
+                className="h-12 pr-10 text-base font-mono text-foreground bg-card"
               />
             </div>
             <Button onClick={handleCopy} size="lg" variant="outline" className="h-12 text-base gap-2">
@@ -101,14 +101,14 @@ export function EmailForwardingSection({ forwardingAddress }: { forwardingAddres
               {copied ? "Kopyalandı!" : "Adresi Kopyala"}
             </Button>
           </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             💡 Örnek: Toptancın sana e-posta gönderdiğinde, o maili olduğu gibi bu adrese yönlendir.
             Yeni bir e-posta yazmana gerek yok.
           </p>
         </>
       ) : (
         <>
-          <p className="text-base text-slate-600">
+          <p className="text-base text-muted-foreground">
             Yönlendirme adresi oluşturmak için önce dükkan adını kaydet.
           </p>
         </>
@@ -128,17 +128,17 @@ export function KnownSendersSection({ senders }: { senders: KnownSender[] }) {
   return (
     <div className="space-y-4">
       {senders.length === 0 ? (
-        <p className="rounded-lg border bg-slate-50 px-3 py-2 text-base text-slate-600">
+        <p className="rounded-lg border bg-muted px-3 py-2 text-base text-muted-foreground">
           Henüz hiçbir toptancıdan mail yönlendirilmedi. Bir mail yönlendirdiğinde burada görünecek.
         </p>
       ) : (
         <div className="space-y-2">
           {senders.map((item) => (
-            <div key={item.id} className="rounded-xl border bg-slate-50 p-3">
+            <div key={item.id} className="rounded-xl border bg-muted p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-white p-2">
-                    <Mail className="size-5 text-slate-500" />
+                  <div className="rounded-lg bg-card p-2">
+                    <Mail className="size-5 text-muted-foreground" />
                   </div>
                   <div>
                     <p className="text-base font-medium">{item.email}</p>
@@ -192,16 +192,16 @@ export function WarehouseSection({ warehouses }: { warehouses: Warehouse[] }) {
 
       <div className="space-y-3">
         {warehouses.length === 0 ? (
-          <p className="rounded-lg border bg-slate-50 px-3 py-2 text-base text-slate-600">Henüz lokasyon yok.</p>
+          <p className="rounded-lg border bg-muted px-3 py-2 text-base text-muted-foreground">Henüz lokasyon yok.</p>
         ) : (
           warehouses.map((warehouse) => {
             const isRaf = warehouse.location_type === "raf"
             return (
-              <div key={warehouse.id} className="rounded-xl border bg-slate-50 p-3">
+              <div key={warehouse.id} className="rounded-xl border bg-muted p-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-base font-semibold">{warehouse.name}</p>
-                    <p className="text-sm text-slate-600">{isRaf ? "🏪 Raf" : "🏭 Depo"} — {warehouse.is_active ? "Aktif" : "Pasif"}</p>
+                    <p className="text-sm text-muted-foreground">{isRaf ? "🏪 Raf" : "🏭 Depo"} — {warehouse.is_active ? "Aktif" : "Pasif"}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <form action={toggleAction}>

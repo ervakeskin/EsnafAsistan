@@ -41,6 +41,9 @@ export async function createProductAction(formData: FormData): Promise<ActionRes
     return { success: false, message: "Pasif depoya ürün eklenemez." }
   }
 
+  const barcode = String(formData.get("barcode") ?? "").trim()
+  const minStock = Number(formData.get("min_stock") ?? 5)
+
   const { error } = await supabase.from("products").insert({
     name,
     quantity,
@@ -48,6 +51,8 @@ export async function createProductAction(formData: FormData): Promise<ActionRes
     purchase_price: purchasePrice,
     warehouse: selectedWarehouse.name,
     warehouse_id: selectedWarehouse.id,
+    barcode: barcode || null,
+    min_stock: minStock,
   })
 
   if (error) {
@@ -142,6 +147,8 @@ export async function createSaleAction(formData: FormData): Promise<ActionResult
     return { success: false, message: "Stok değişti. Lütfen sayfayı yenileyip tekrar deneyin." }
   }
 
+  const paymentType = String(formData.get("payment_type") ?? "nakit").trim()
+
   const { error: saleInsertError } = await supabase.from("sales").insert({
     product_id: productId,
     quantity,
@@ -149,6 +156,7 @@ export async function createSaleAction(formData: FormData): Promise<ActionResult
     purchase_price: purchasePrice,
     customer_name: customerName || null,
     note: note || null,
+    payment_type: paymentType,
   })
 
   if (saleInsertError) {

@@ -11,6 +11,9 @@ import {
   LogOut,
   MailPlus,
   Menu,
+  Users,
+  Truck,
+  Phone,
   Wallet,
 } from "lucide-react"
 
@@ -40,6 +43,16 @@ const menuItems = [
     href: "/dashboard/kasa",
     label: "Kasa",
     icon: Wallet,
+  },
+  {
+    href: "/dashboard/musteri-cari",
+    label: "Müşteri Cari",
+    icon: Users,
+  },
+  {
+    href: "/dashboard/tedarikciler",
+    label: "Tedarikçiler",
+    icon: Truck,
   },
   {
     href: "/dashboard/raporlar",

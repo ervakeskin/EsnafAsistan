@@ -77,14 +77,13 @@ function LoginPageContent() {
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white to-slate-100 px-4 py-10">
       <div className="grid w-full max-w-5xl items-center gap-8 md:grid-cols-2">
         <section className="hidden space-y-4 md:block">
-          <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600">
-            EsnafAsistan
+          <p className="inline-flex rounded-full border border-border bg-card px-3 py-1 text-sm font-medium text-muted-foreground">
+            🚀 Stok, Kasa, Teslimat — Tek Panel
           </p>
-          <h1 className="text-4xl font-semibold text-slate-900">Dükkanınızı tek bir noktadan yönetin.</h1>
-          <p className="text-lg text-slate-600">Sipariş, stok, teslimat ve kasa takibini sade bir panelde anında görün.</p>
+          <h1 className="text-4xl font-semibold text-foreground">Dükkanınızı tek bir noktadan yönetin.</h1>
+          <p className="text-lg text-muted-foreground">Sipariş, stok, teslimat ve kasa takibini sade bir panelde anında görün.</p>
         </section>
-
-        <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
+        <Card className="border-border shadow-card">
           <CardHeader className="space-y-2">
             <CardTitle className="text-2xl">Giriş Yap</CardTitle>
             <p className="text-base text-muted-foreground">E-posta ve şifrenle paneline güvenli şekilde gir.</p>
@@ -97,7 +96,7 @@ function LoginPageContent() {
                   E-posta
                 </Label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3 top-3.5 size-5 text-slate-400" />
+                  <Mail className="pointer-events-none absolute left-3 top-3.5 size-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -115,7 +114,7 @@ function LoginPageContent() {
                   Şifre
                 </Label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3 top-3.5 size-5 text-slate-400" />
+                  <Lock className="pointer-events-none absolute left-3 top-3.5 size-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
@@ -148,9 +147,9 @@ function LoginPageContent() {
               </Button>
             </form>
 
-            <div className="text-center text-base text-slate-600">
-              Hesabın yok mu?{" "}
-              <Link href="/kayit-ol" className="font-semibold text-slate-900 underline underline-offset-4">
+            <div className="text-center text-base text-muted-foreground">
+              Hesabınız yok mu?{" "}
+              <Link href="/kayit-ol" className="font-semibold text-foreground underline underline-offset-4">
                 Kayıt Ol
               </Link>
             </div>

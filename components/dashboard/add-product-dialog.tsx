@@ -101,7 +101,7 @@ export function AddProductDialog({ action, warehouses, defaultWarehouseId }: Add
                 </SelectContent>
               </Select>
               {warehouses.length === 0 ? (
-                <p className="text-sm text-red-600">Önce Ayarlar sayfasından aktif depo ekleyin.</p>
+                <p className="text-sm text-danger">Önce Ayarlar sayfasından aktif depo ekleyin.</p>
               ) : null}
             </div>
           </div>
@@ -113,7 +113,7 @@ export function AddProductDialog({ action, warehouses, defaultWarehouseId }: Add
           </Button>
 
           {state?.message && !state.success && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.message}</p>
+            <p className="rounded-md bg-danger-bg px-3 py-2 text-sm text-danger">{state.message}</p>
           )}
         </form>
       </DialogContent>

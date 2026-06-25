@@ -66,10 +66,15 @@ export function AddDeliveryDialog({ action, products }: AddDeliveryDialogProps) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="product_id" className="text-base">Ürün (opsiyonel)</Label>
+            <Label htmlFor="product_name" className="text-base">Ürün Adı (yaz veya listeden seç)</Label>
+            <Input id="product_name" name="product_name" className="h-12 text-base" placeholder="Örn: 1/2 Küresel Vana" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="product_id" className="text-base">Kayıtlı Üründen Seç (opsiyonel)</Label>
             <Select name="product_id">
               <SelectTrigger id="product_id" className="h-12 w-full text-base">
-                <SelectValue placeholder="Genel sipariş" />
+                <SelectValue placeholder="Seçilmedi" />
               </SelectTrigger>
               <SelectContent>
                 {products.map((product) => (
@@ -99,7 +104,7 @@ export function AddDeliveryDialog({ action, products }: AddDeliveryDialogProps) 
           </Button>
 
           {state?.message && !state.success && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.message}</p>
+            <p className="rounded-md bg-danger-bg px-3 py-2 text-sm text-danger">{state.message}</p>
           )}
         </form>
       </DialogContent>

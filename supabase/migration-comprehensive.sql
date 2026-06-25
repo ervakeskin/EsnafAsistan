@@ -87,7 +87,37 @@ alter table if exists public.linked_emails
 alter table if exists public.shop_settings
   add column if not exists forwarding_address text;
 
--- 8. products — legacy text kolonunu temizle (yerine warehouse_id FK kullanılıyor)
+-- 8. deliveries — product_name metin kolonu (elle yazılan ürün adı, product_id FK'dan bağımsız)
+alter table if exists public.deliveries
+  add column if not exists product_name text;
+
+-- 9. sales — ödeme türü (nakit/kart/havale)
+alter table if exists public.sales
+  add column if not exists payment_type text not null default 'nakit';
+alter table if exists public.sales
+  drop constraint if exists sales_payment_type_check,
+  add constraint sales_payment_type_check
+  check (payment_type in ('nakit', 'kart', 'havale'));
+
+-- 10. audit_log — tüm tablolardaki değişiklikleri izle
+create table if not exists public.audit_log (
+  id uuid primary key default gen_random_uuid(),
+  table_name text not null,
+  record_id uuid not null,
+  action text not null check (action in ('insert', 'update', 'delete')),
+  old_data jsonb,
+  new_data jsonb,
+  changed_by uuid references auth.users(id),
+  changed_at timestamptz not null default now()
+);
+alter table public.audit_log enable row level security;
+drop policy if exists "Audit log sadece admin okuyabilir" on public.audit_log;
+create policy "Audit log sadece admin okuyabilir"
+  on public.audit_log for select
+  to authenticated
+  using (false);
+
+-- 11. products — legacy text kolonunu temizle (yerine warehouse_id FK kullanılıyor)
 alter table if exists public.products
   drop column if exists warehouse;
 

@@ -31,7 +31,7 @@ export function DeleteProductForm({ productId }: { productId: string }) {
         {isPending ? "Siliniyor..." : "Sil"}
       </Button>
       {state?.message && !state.success && (
-        <p className="mt-1 text-sm text-red-600">{state.message}</p>
+        <p className="mt-1 text-sm text-danger">{state.message}</p>
       )}
     </form>
   )

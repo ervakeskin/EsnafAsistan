@@ -40,6 +40,8 @@
   --color-warning-bg: var(--warning-bg);
   --color-danger: var(--danger);
   --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -84,6 +86,8 @@
   --warning-bg: rgba(154, 110, 26, 0.08);
   --danger: #b91c1c;
   --danger-bg: rgba(185, 28, 28, 0.08);
+  --info: #0071e3;
+  --info-bg: rgba(0, 113, 227, 0.08);
 }
 
 .dark {
@@ -119,6 +123,8 @@
   --warning-bg: rgba(255, 214, 10, 0.1);
   --danger: #ff453a;
   --danger-bg: rgba(255, 69, 58, 0.1);
+  --info: #0a84ff;
+  --info-bg: rgba(10, 132, 255, 0.1);
 }
 
 @layer base {

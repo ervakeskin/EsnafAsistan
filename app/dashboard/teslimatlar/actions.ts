@@ -118,3 +118,50 @@ export async function deleteDeliveryAction(formData: FormData): Promise<ActionRe
   revalidatePath("/dashboard/teslimatlar")
   return { success: true, message: "Teslimat silindi." }
 }
+
+export async function rejectDeliveryAndDisableEmailAction(formData: FormData): Promise<ActionResult> {
+  const id = String(formData.get("id") ?? "").trim()
+  if (!id) {
+    return { success: false, message: "Teslimat bulunamadı." }
+  }
+
+  const supabase = await createClient()
+
+  // 1. Teslimatın hangi e-postadan geldiğini bul
+  const { data: delivery, error: fetchError } = await supabase
+    .from("deliveries")
+    .select("linked_email")
+    .eq("id", id)
+    .single()
+
+  if (fetchError || !delivery) {
+    return { success: false, message: `Teslimat bilgileri alınamadı: ${fetchError?.message}` }
+  }
+
+  // 2. Teslimatı iptal et
+  const { error: updateError } = await supabase
+    .from("deliveries")
+    .update({ status: "iptal" })
+    .eq("id", id)
+
+  if (updateError) {
+    return { success: false, message: `Teslimat iptal edilemedi: ${updateError.message}` }
+  }
+
+  let emailMsg = ""
+  // 3. E-posta adresinin yapay zeka ile okuma iznini (can_read) kapat (Geri Bildirim Döngüsü)
+  if (delivery.linked_email) {
+    const { error: emailError } = await supabase
+      .from("linked_emails")
+      .update({ can_read: false })
+      .eq("email", delivery.linked_email)
+
+    if (!emailError) {
+      emailMsg = ` ve "${delivery.linked_email}" adresinin yapay zeka okuma izni kapatıldı.`
+    }
+  }
+
+  revalidatePath("/dashboard/teslimatlar")
+  revalidatePath("/dashboard/ayarlar")
+  return { success: true, message: `Teslimat iptal edildi${emailMsg}` }
+}

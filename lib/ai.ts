@@ -139,3 +139,91 @@ export async function suggestCategory(
   const data = await response.json()
   return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "Genel"
 }
+
+/**
+ * Gelen sipariş veya fatura e-postasından teslimat detaylarını (ürün adı, adet, toptancı adı vb.) AI ile çıkartır.
+ */
+export async function parseDeliveryEmailWithAI(
+  subject: string,
+  bodyText: string,
+  apiKey: string,
+): Promise<{
+  supplierName?: string
+  productName?: string
+  quantity?: number
+  notes?: string
+  expectedDate?: string
+}> {
+  const projectId = process.env.GOOGLE_PROJECT_ID ?? "esnaf-asistan-500520"
+  const location = "us-central1"
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/gemini-1.5-flash:generateContent`
+
+  const prompt = `
+Aşağıda bir toptancıdan gelen sipariş veya fatura e-postasının konusu ve içeriği verilmiştir. 
+Bu e-postadan teslimat bilgilerini çıkarıp, SADECE geçerli bir JSON objesi olarak geri döndür. 
+Hiçbir açıklama, markdown işareti (\`\`\`json vb.) veya ek metin ekleme. Sadece saf JSON string döndür.
+
+Döndüreceğin JSON yapısı şu şekilde olmalıdır:
+{
+  "supplierName": "Toptancı/Satıcı Adı (eğer e-postadan anlaşılıyorsa, örn: Ülker, Sütaş, Metro Toptancı, yoksa boş bırak)",
+  "productName": "Siparişteki ana ürün adı veya ürünlerin özeti (örn: '10 Koli Süt ve 5 Paket Bisküvi', veya 'Karışık Gıda Malzemesi')",
+  "quantity": Toplam teslim alınacak koli/paket/ürün adedi (sayı olmalı, tam sayı olarak tahmin et, en az 1)",
+  "expectedDate": "Tahmini teslimat tarihi (YYYY-MM-DD formatında. Eğer e-postada teslimat tarihi geçiyorsa onu yaz, geçmiyorsa bugünün tarihi olan '${new Date().toISOString().split("T")[0]}' yaz)",
+  "notes": "E-postadan çıkarılan önemli notlar, fatura no veya detaylar (isteğe bağlı)"
+}
+
+E-posta Konusu: ${subject}
+E-posta İçeriği:
+${bodyText.slice(0, 4000)}
+`
+
+  const body = {
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
+      },
+    ],
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 500,
+    },
+  }
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      return {}
+    }
+
+    const data = await response.json()
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+    if (!text) return {}
+
+    // Markdown \`\`\`json ve \`\`\` bloklarını temizle
+    const cleanText = text.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "").trim()
+    const parsed = JSON.parse(cleanText)
+    return {
+      supplierName: parsed.supplierName || undefined,
+      productName: parsed.productName || undefined,
+      quantity: typeof parsed.quantity === "number" ? parsed.quantity : undefined,
+      notes: parsed.notes || undefined,
+      expectedDate: parsed.expectedDate || undefined,
+    }
+  } catch (e) {
+    console.error("[AI Email Parser] Hata:", e)
+    return {}
+  }
+}

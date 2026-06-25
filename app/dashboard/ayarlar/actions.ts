@@ -175,3 +175,45 @@ export async function removeKnownSenderAction(formData: FormData): Promise<Actio
   revalidatePath("/dashboard/ayarlar")
   return { success: true, message: "Gönderici listeden kaldırıldı." }
 }
+
+export async function addLinkedEmailAction(formData: FormData): Promise<ActionResult> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase()
+  const label = String(formData.get("label") ?? "").trim()
+  const canRead = formData.get("can_read") === "true"
+
+  if (!email) {
+    return { success: false, message: "E-posta adresi boş bırakılamaz." }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { success: false, message: "Yetkisiz işlem. Lütfen giriş yapın." }
+  }
+
+  // Zaten ekli mi kontrol edelim
+  const { data: existing } = await supabase
+    .from("linked_emails")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle()
+
+  if (existing) {
+    return { success: false, message: "Bu e-posta adresi zaten eklenmiş." }
+  }
+
+  const { error } = await supabase.from("linked_emails").insert({
+    email,
+    label: label || null,
+    is_active: true,
+    can_read: canRead,
+    user_id: user.id,
+  })
+
+  if (error) {
+    return { success: false, message: `E-posta eklenemedi: ${error.message}` }
+  }
+
+  revalidatePath("/dashboard/ayarlar")
+  return { success: true, message: "E-posta başarıyla eklendi." }
+}

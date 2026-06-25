@@ -15,9 +15,10 @@ import {
   renameWarehouseAction,
   saveShopNameAction,
   toggleWarehouseActiveAction,
+  addLinkedEmailAction,
 } from "./actions"
 
-type KnownSender = { id: string; email: string; can_read?: boolean; created_at?: string }
+type KnownSender = { id: string; email: string; can_read?: boolean; created_at?: string; label?: string }
 type Warehouse = { id: string; name: string; is_active: boolean; location_type?: string }
 
 function useForm(action: (formData: FormData) => Promise<ActionResult>) {
@@ -64,9 +65,35 @@ export function ShopNameForm({ defaultValue }: { defaultValue: string }) {
   )
 }
 
-export function EmailForwardingSection({ forwardingAddress }: { forwardingAddress?: string | null }) {
+export function DirectEmailSection({
+  senders,
+  forwardingAddress,
+}: {
+  senders: KnownSender[]
+  forwardingAddress?: string | null
+}) {
+  const router = useRouter()
+  const [addState, addAction, addPending] = useForm(addLinkedEmailAction)
+  const [removeState, removeAction, removePending] = useForm(removeKnownSenderAction)
+
+  const [emailVal, setEmailVal] = useState("")
+  const [labelVal, setLabelVal] = useState("")
   const [copied, setCopied] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (addState?.success) {
+      setEmailVal("")
+      setLabelVal("")
+      router.refresh()
+    }
+  }, [addState, router])
+
+  useEffect(() => {
+    if (removeState?.success) {
+      router.refresh()
+    }
+  }, [removeState, router])
 
   const handleCopy = async () => {
     if (!forwardingAddress) return
@@ -80,82 +107,166 @@ export function EmailForwardingSection({ forwardingAddress }: { forwardingAddres
   }
 
   return (
-    <div className="space-y-4">
-      {forwardingAddress ? (
-        <>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            Toptancılarının sana gönderdiği sipariş/fatura e-postalarını aşağıdaki adrese
-            <strong> yönlendir</strong> (forward et). Sistem gelen mailleri otomatik tanır.
+    <div className="space-y-6">
+      <div className="rounded-xl border bg-muted/40 p-4 space-y-3">
+        <p className="text-base text-foreground font-medium flex items-center gap-2">
+          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          Akıllı E-posta Fatura Okuma Sistemi
+        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Toptancılarınızın size gönderdiği fatura/sipariş maillerini otomatik okutmak için aşağıdaki yöntemlerden birini kullanabilirsiniz.
+          Gelen mailler yapay zeka ile otomatik taranarak sipariş ve teslimat olarak sisteme kaydedilecektir.
+        </p>
+      </div>
+
+      {/* YÖNTEM 1: YÖNLENDİRME ADRESİ */}
+      <div className="space-y-3 rounded-xl border p-4 bg-card">
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center text-xs font-bold text-primary bg-primary/10 rounded-full size-6">1</span>
+          <h4 className="text-base font-semibold text-foreground">En Kolay Yöntem: Size Özel Yönlendirme Adresi</h4>
+        </div>
+        {forwardingAddress ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Toptancınızdan gelen fatura maillerini size özel oluşturulan bu adrese <strong>yönlendirmeniz (forward etmeniz)</strong> yeterlidir.
+              Dilerseniz toptancınıza doğrudan faturayı bu adrese göndermesini de söyleyebilirsiniz.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="relative flex-1">
+                <Input
+                  ref={inputRef}
+                  readOnly
+                  value={forwardingAddress}
+                  className="h-11 pr-10 text-sm font-mono text-foreground bg-muted/30"
+                />
+              </div>
+              <Button onClick={handleCopy} size="default" variant="outline" className="h-11 text-sm gap-2">
+                <Copy className="size-4" />
+                {copied ? "Kopyalandı!" : "Adresi Kopyala"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground bg-muted/20 p-2 rounded-md">
+              💡 Örnek: Gmail ayarlarınızdan bir filtre oluşturarak toptancınızdan gelen faturaları bu adrese otomatik yönlendirebilirsiniz.
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Özel yönlendirme adresi oluşturulması için lütfen önce dükkan adınızı kaydedin.
           </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
+        )}
+      </div>
+
+      {/* YÖNTEM 2: AKILLI EŞLEŞTİRME VE LİSTE */}
+      <div className="space-y-4 rounded-xl border p-4 bg-card">
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center text-xs font-bold text-primary bg-primary/10 rounded-full size-6">2</span>
+          <h4 className="text-base font-semibold text-foreground">Alternatif Yöntem: E-posta Adreslerinizi Tanımlayın</h4>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Kendi mail adresinizi veya toptancılarınızın gönderici adreslerini buraya ekleyerek, 
+          doğrudan e-posta eşleşmesi (Fallback) üzerinden teslimatların hesabınıza işlenmesini sağlayabilirsiniz.
+        </p>
+
+        <form action={addAction} className="space-y-4 border-t pt-3">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="email-address">E-posta Adresi</Label>
               <Input
-                ref={inputRef}
-                readOnly
-                value={forwardingAddress}
-                className="h-12 pr-10 text-base font-mono text-foreground bg-card"
+                id="email-address"
+                type="email"
+                name="email"
+                required
+                value={emailVal}
+                onChange={(e) => setEmailVal(e.target.value)}
+                placeholder="Örn: fatura@sutastoptan.com veya kisisel@mail.com"
+                className="h-11"
               />
             </div>
-            <Button onClick={handleCopy} size="lg" variant="outline" className="h-12 text-base gap-2">
-              <Copy className="size-4" />
-              {copied ? "Kopyalandı!" : "Adresi Kopyala"}
-            </Button>
+            <div className="space-y-2">
+              <Label htmlFor="email-label">Açıklama / Toptancı Adı</Label>
+              <Input
+                id="email-label"
+                type="text"
+                name="label"
+                value={labelVal}
+                onChange={(e) => setLabelVal(e.target.value)}
+                placeholder="Örn: Sütaş Toptancısı veya Şahsi Mailim"
+                className="h-11"
+              />
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            💡 Örnek: Toptancın sana e-posta gönderdiğinde, o maili olduğu gibi bu adrese yönlendir.
-            Yeni bir e-posta yazmana gerek yok.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="text-base text-muted-foreground">
-            Yönlendirme adresi oluşturmak için önce dükkan adını kaydet.
-          </p>
-        </>
-      )}
-    </div>
-  )
-}
 
-export function KnownSendersSection({ senders }: { senders: KnownSender[] }) {
-  const router = useRouter()
-  const [removeState, removeAction, removePending] = useForm(removeKnownSenderAction)
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="can_read"
+              name="can_read"
+              value="true"
+              defaultChecked
+              className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 bg-background"
+            />
+            <Label htmlFor="can_read" className="cursor-pointer select-none">
+              Yapay zeka ile fatura/sipariş içeriğini otomatik oku
+            </Label>
+          </div>
 
-  useEffect(() => {
-    if (removeState?.success) router.refresh()
-  }, [removeState, router])
+          <Button size="default" className="h-11" disabled={addPending}>
+            {addPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Ekleniyor...
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                E-posta Ekle
+              </>
+            )}
+          </Button>
+          <FormFeedback state={addState} isPending={addPending} />
+        </form>
 
-  return (
-    <div className="space-y-4">
-      {senders.length === 0 ? (
-        <p className="rounded-lg border bg-muted px-3 py-2 text-base text-muted-foreground">
-          Henüz hiçbir toptancıdan mail yönlendirilmedi. Bir mail yönlendirdiğinde burada görünecek.
-        </p>
-      ) : (
-        <div className="space-y-2">
-          {senders.map((item) => (
-            <div key={item.id} className="rounded-xl border bg-muted p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-card p-2">
-                    <Mail className="size-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-base font-medium">{item.email}</p>
+        <div className="space-y-3 border-t pt-4">
+          <h5 className="text-sm font-semibold text-foreground">Tanımlı E-posta Listesi</h5>
+          {senders.length === 0 ? (
+            <p className="rounded-lg border border-dashed bg-muted/20 px-3 py-6 text-center text-sm text-muted-foreground">
+              Henüz tanımlanmış bir e-posta adresi bulunmuyor.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {senders.map((item) => (
+                <div key={item.id} className="rounded-xl border bg-muted/10 p-3.5 hover:shadow-xs transition-shadow">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-lg bg-primary/10 p-2 text-primary mt-0.5">
+                        <Mail className="size-4.5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-semibold text-foreground">{item.email}</span>
+                          {item.can_read && (
+                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10">
+                              Yapay Zeka
+                            </span>
+                          )}
+                        </div>
+                        {item.label && <p className="text-xs text-muted-foreground mt-0.5">{item.label}</p>}
+                      </div>
+                    </div>
+                    <form action={removeAction} className="flex justify-end">
+                      <input type="hidden" name="id" value={item.id} />
+                      <Button variant="outline" size="sm" className="h-9 text-xs text-danger hover:text-danger hover:bg-danger-bg/20 border-danger/20 hover:border-danger/30" disabled={removePending}>
+                        <Trash2 className="size-3.5 mr-1" />
+                        Kaldır
+                      </Button>
+                    </form>
                   </div>
                 </div>
-                <form action={removeAction}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <Button variant="destructive" size="lg" className="h-11 text-base" disabled={removePending}>
-                    <Trash2 className="size-4" />
-                    Kaldır
-                  </Button>
-                </form>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }

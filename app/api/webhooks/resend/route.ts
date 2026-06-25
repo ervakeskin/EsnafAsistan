@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/server"
+import { parseDeliveryEmailWithAI } from "@/lib/ai"
 
 type ResendEventPayload = {
   type: "email.sent" | "email.delivered" | "email.delivery_delayed" | "email.complained" | "email.bounced" | "email.failed" | "email.clicked" | "email.opened"
@@ -154,22 +155,72 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Geçersiz payload: from alanı eksik" }, { status: 400 })
     }
 
+    const recipientEmails = (inbound.to ?? []).map((t) => parseSenderEmail(t))
+    const allEmailsToMatch = [senderEmail, ...recipientEmails].filter(Boolean)
+
     const supabase = createAdminClient()
 
-    const { error } = await supabase.from("deliveries").insert({
-      supplier_name: senderName || senderEmail,
-      linked_email: senderEmail,
-      expected_date: new Date().toISOString().split("T")[0],
-      quantity: 1,
-      status: "işlenmeyi bekliyor",
-    })
+    // linked_emails tablosunda eşleşen aktif bir kayıt arıyoruz
+    const { data: matchedEmails, error: matchError } = await supabase
+      .from("linked_emails")
+      .select("user_id, email")
+      .in("email", allEmailsToMatch)
+      .eq("is_active", true)
 
-    if (error) {
-      log(requestId, `DB ekleme hatası: ${error.message}`, { senderEmail, error })
-      return NextResponse.json({ error: `Veritabanı hatası: ${error.message}` }, { status: 500 })
+    if (matchError) {
+      log(requestId, `E-posta eşleştirme hatası: ${matchError.message}`)
+      return NextResponse.json({ error: `E-posta eşleştirme hatası: ${matchError.message}` }, { status: 500 })
     }
 
-    log(requestId, `Teslimat başarıyla eklendi: ${senderName} <${senderEmail}>`)
+    if (!matchedEmails || matchedEmails.length === 0) {
+      log(requestId, `Eşleşen aktif e-posta bulunamadı. Gelen mail: from=${senderEmail}, to=${recipientEmails.join(", ")}`)
+      // Burada 200 ok dönüyoruz ki Resend webhook'u tekrar tekrar denemesin gereksiz yere.
+      return NextResponse.json({ ok: false, message: "Eşleşen aktif e-posta bulunamadı." })
+    }
+
+    // İlk eşleşen kullanıcının ID'sini alıyoruz
+    const matchedUser = matchedEmails[0]
+    const userId = matchedUser.user_id
+
+    // AI ile maili parse etmeyi dene
+    let parsedSupplier = senderName || senderEmail
+    let parsedProduct = subject
+    let parsedQuantity = 1
+    let parsedDate = new Date().toISOString().split("T")[0]
+    let parsedNotes = `E-posta konusu: ${subject}`
+
+    const apiKey = process.env.GEMINI_API_KEY
+    if (apiKey) {
+      const emailContent = inbound.text || inbound.html || ""
+      try {
+        const aiResult = await parseDeliveryEmailWithAI(subject, emailContent, apiKey)
+        if (aiResult.supplierName) parsedSupplier = aiResult.supplierName
+        if (aiResult.productName) parsedProduct = aiResult.productName
+        if (aiResult.quantity) parsedQuantity = aiResult.quantity
+        if (aiResult.expectedDate) parsedDate = aiResult.expectedDate
+        if (aiResult.notes) parsedNotes = aiResult.notes
+      } catch (aiErr) {
+        log(requestId, "AI ile e-posta analizi başarısız oldu, varsayılan değerler kullanılacak", aiErr)
+      }
+    }
+
+    const { error: insertError } = await supabase.from("deliveries").insert({
+      user_id: userId,
+      supplier_name: parsedSupplier,
+      product_name: parsedProduct,
+      linked_email: senderEmail,
+      expected_date: parsedDate,
+      quantity: parsedQuantity,
+      status: "işlenmeyi bekliyor",
+      notes: parsedNotes,
+    })
+
+    if (insertError) {
+      log(requestId, `DB ekleme hatası: ${insertError.message}`, { senderEmail, insertError })
+      return NextResponse.json({ error: `Veritabanı hatası: ${insertError.message}` }, { status: 500 })
+    }
+
+    log(requestId, `Teslimat başarıyla eklendi (Kullanıcı: ${userId}): ${parsedSupplier} - ${parsedProduct}`)
     return NextResponse.json({ ok: true })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Bilinmeyen hata"

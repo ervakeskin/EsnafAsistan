@@ -1,4 +1,4 @@
-import { CheckCircle2, Trash2, XCircle } from "lucide-react"
+import { CheckCircle2, Trash2, XCircle, Sparkles } from "lucide-react"
 
 import { AddDeliveryDialog } from "@/components/dashboard/add-delivery-dialog"
 import { Breadcrumb } from "@/components/dashboard/breadcrumb"
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table"
 import { createClient } from "@/lib/supabase/server"
 import { createDeliveryAction } from "./actions"
-import { DeliveryStatusForm, DeleteDeliveryForm } from "./form-client"
+import { DeliveryStatusForm, DeleteDeliveryForm, RejectDeliveryForm } from "./form-client"
 
 // Teslimat satırı tipi: liste tablosunda gösterilen alanlar
 type DeliveryRow = {
@@ -24,7 +24,7 @@ type DeliveryRow = {
   supplier_name: string
   expected_date: string
   quantity: number
-  status: "bekliyor" | "teslim-alindi" | "iptal"
+  status: "bekliyor" | "teslim-alindi" | "iptal" | "işlenmeyi bekliyor"
   product_name?: string | null
   products: { name: string; unit: string }[] | null
 }
@@ -34,6 +34,7 @@ const STATUS_META: Record<DeliveryRow["status"], { label: string; className: str
   bekliyor: { label: "Bekliyor", className: "bg-warning-bg text-warning", icon: XCircle },
   "teslim-alindi": { label: "Teslim Alındı", className: "bg-success-bg text-success", icon: CheckCircle2 },
   iptal: { label: "İptal", className: "bg-danger-bg text-danger", icon: XCircle },
+  "işlenmeyi bekliyor": { label: "AI Onayı Bekliyor", className: "bg-info-bg text-info", icon: Sparkles },
 }
 
 function formatDate(value: string) {
@@ -173,12 +174,20 @@ export default async function TeslimatlarPage() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${statusMeta.className}`}
                         >
-                          <statusMeta.icon className="size-4" />
+                          <statusMeta.icon className="size-4 animate-pulse-subtle" />
                           {statusMeta.label}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
+                          {/* AI Onayı Bekliyorsa onay/red seçenekleri */}
+                          {delivery.status === "işlenmeyi bekliyor" ? (
+                            <>
+                              <DeliveryStatusForm deliveryId={delivery.id} status="bekliyor" label="Onayla" />
+                              <RejectDeliveryForm deliveryId={delivery.id} />
+                            </>
+                          ) : null}
+                          
                           {/* Bekliyor durumundaysa teslim alındı / iptal seçenekleri */}
                           {delivery.status === "bekliyor" ? (
                             <>

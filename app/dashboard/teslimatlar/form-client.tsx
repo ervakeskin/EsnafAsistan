@@ -3,7 +3,7 @@
 import { useActionState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { updateDeliveryStatusAction, deleteDeliveryAction } from "./actions"
+import { updateDeliveryStatusAction, deleteDeliveryAction, rejectDeliveryAndDisableEmailAction } from "./actions"
 
 type ActionResult = { success: boolean; message: string }
 
@@ -58,6 +58,29 @@ export function DeleteDeliveryForm({ deliveryId }: { deliveryId: string }) {
       <input type="hidden" name="id" value={deliveryId} />
       <Button type="submit" size="icon-sm" variant="outline" className="h-11 w-11 min-h-11 sm:h-9 sm:w-9 sm:min-h-9" disabled={isPending}>
         Sil
+      </Button>
+      {state?.message && !state.success && (
+        <p className="mt-1 text-xs text-danger">{state.message}</p>
+      )}
+    </form>
+  )
+}
+
+export function RejectDeliveryForm({ deliveryId }: { deliveryId: string }) {
+  const router = useRouter()
+  const [state, formAction, isPending] = useAction(rejectDeliveryAndDisableEmailAction)
+
+  useEffect(() => {
+    if (state?.success) {
+      router.refresh()
+    }
+  }, [state, router])
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="id" value={deliveryId} />
+      <Button type="submit" size="sm" className="h-11 min-h-11 sm:h-9 sm:min-h-9" variant="outline" disabled={isPending}>
+        {isPending ? "İşleniyor..." : "Bu Bir Fatura Değil"}
       </Button>
       {state?.message && !state.success && (
         <p className="mt-1 text-xs text-danger">{state.message}</p>

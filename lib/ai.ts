@@ -51,26 +51,21 @@ export async function callGeminiAI(
 ): Promise<string> {
   const systemPrompt = SYSTEM_PROMPT(context)
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
+  // Vertex AI REST endpoint — Google Cloud API key (AQ. prefix) ile çalışır
+  const projectId = process.env.GOOGLE_PROJECT_ID ?? "esnaf-asistan-500520"
+  const location = "us-central1"
+  const model = "gemini-1.5-flash"
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`
 
-  // Sistem promptunu ilk sıraya user mesajı olarak ekle (system_instruction yerine)
-  // Bu yaklaşım tüm Gemini versiyonlarında çalışır
-  const geminiContents = [
-    {
-      role: "user",
-      parts: [{ text: `[SİSTEM TALİMATLARI]\n${systemPrompt}\n\n[KULLANICI MESAJI BAŞLIYOR]` }],
-    },
-    {
-      role: "model",
-      parts: [{ text: "Anladım. Verilen talimatlar doğrultusunda yardımcı olacağım." }],
-    },
-    ...messages.map((msg) => ({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: msg.content }],
-    })),
-  ]
+  const geminiContents = messages.map((msg) => ({
+    role: msg.role === "assistant" ? "model" : "user",
+    parts: [{ text: msg.content }],
+  }))
 
   const body = {
+    system_instruction: {
+      parts: [{ text: systemPrompt }],
+    },
     contents: geminiContents,
     generationConfig: {
       temperature: 0.7,
@@ -80,7 +75,10 @@ export async function callGeminiAI(
 
   const response = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
     body: JSON.stringify(body),
   })
 
@@ -109,7 +107,9 @@ export async function suggestCategory(
   productName: string,
   apiKey: string,
 ): Promise<string> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
+  const projectId = process.env.GOOGLE_PROJECT_ID ?? "esnaf-asistan-500520"
+  const location = "us-central1"
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/gemini-1.5-flash:generateContent`
 
   const body = {
     contents: [
@@ -128,7 +128,10 @@ export async function suggestCategory(
 
   const response = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
     body: JSON.stringify(body),
   })
 

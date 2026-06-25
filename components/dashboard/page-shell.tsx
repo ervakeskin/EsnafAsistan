@@ -13,9 +13,9 @@ type PageShellProps = {
 }
 
 const ACCENTS = [
-  "bg-danger/50",
-  "bg-primary/50",
-  "bg-success/50",
+  "bg-danger/40",
+  "bg-primary/40",
+  "bg-success/40",
 ]
 
 export function PageShell({ title, description, stats }: PageShellProps) {
@@ -26,7 +26,7 @@ export function PageShell({ title, description, stats }: PageShellProps) {
         <p className="mt-2 text-base text-muted-foreground">{description}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {stats.map((item, idx) => (
           <Card key={item.label} className="overflow-hidden">
             <div className={`h-1 ${ACCENTS[idx % ACCENTS.length]}`} />

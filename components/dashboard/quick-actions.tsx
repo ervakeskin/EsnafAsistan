@@ -29,12 +29,12 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div className="grid gap-5 sm:grid-cols-3">
       {actions.map((action) => (
         <Link
           key={action.href}
           href={action.href}
-          className="group relative overflow-hidden rounded-xl bg-card p-5 ring-1 ring-foreground/5 hover:ring-foreground/15 transition-all hover:-translate-y-0.5"
+          className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-card hover:shadow-card-hover transition-all hover:-translate-y-0.5"
         >
           <div className="relative">
             <div className={`inline-flex rounded-lg ${action.iconClass} p-2.5`}>

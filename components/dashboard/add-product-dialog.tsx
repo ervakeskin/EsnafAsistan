@@ -88,7 +88,7 @@ export function AddProductDialog({ action, warehouses, defaultWarehouseId }: Add
             </div>
             <div className="space-y-2">
               <Label htmlFor="warehouse_id" className="text-base">Depo Konumu</Label>
-              <Select name="warehouse_id" defaultValue={defaultWarehouseId ?? undefined}>
+              <Select name="warehouse_id" defaultValue={defaultWarehouseId ?? undefined} itemToStringLabel={(v) => warehouses.find((w) => w.id === v)?.name ?? String(v)}>
                 <SelectTrigger id="warehouse_id" className="h-12 w-full text-base">
                   <SelectValue />
                 </SelectTrigger>

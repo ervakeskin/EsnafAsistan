@@ -36,7 +36,7 @@ export function WarehouseFilter({ value, options }: WarehouseFilterProps) {
   return (
     <div className="space-y-2">
       <p className="text-base font-medium">Depo Filtresi</p>
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value} onValueChange={onValueChange} itemToStringLabel={(v) => options.find((o) => o.value === v)?.label ?? String(v)}>
         <SelectTrigger className="h-12 w-full text-base sm:w-60" size="default">
           <SelectValue placeholder={selectedLabel} />
         </SelectTrigger>

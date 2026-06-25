@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, LogOut, Trash2, KeyRound } from "lucide-react"
+import { useEffect } from "react"
+import { Loader2, LogOut, Trash2, KeyRound, Mail, CheckCircle2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,6 +16,129 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+
+export function EmailVerificationForm() {
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [emailVerified, setEmailVerified] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const [updating, setUpdating] = useState(false)
+  const [newEmail, setNewEmail] = useState("")
+  const [message, setMessage] = useState<{ type: "error" | "success" | "info"; text: string } | null>(null)
+
+  async function loadStatus() {
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/verify-email")
+      if (res.ok) {
+        const data = await res.json()
+        setEmail(data.email ?? "")
+        setEmailVerified(!!data.emailVerified)
+      }
+    } catch {
+      setMessage({ type: "error", text: "E-posta bilgileri alınamadı." })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { loadStatus() }, [])
+
+  async function handleResend() {
+    setSending(true)
+    setMessage(null)
+    try {
+      const res = await fetch("/api/auth/verify-email", { method: "POST" })
+      const data = await res.json()
+      setMessage({ type: res.ok ? "success" : "error", text: data.message })
+    } catch {
+      setMessage({ type: "error", text: "Doğrulama e-postası gönderilemedi." })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function handleUpdateEmail(e: React.FormEvent) {
+    e.preventDefault()
+    setUpdating(true)
+    setMessage(null)
+    try {
+      const res = await fetch("/api/auth/verify-email", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newEmail }),
+      })
+      const data = await res.json()
+      setMessage({ type: res.ok ? "success" : "error", text: data.message })
+      if (res.ok) {
+        setNewEmail("")
+        loadStatus()
+      }
+    } catch {
+      setMessage({ type: "error", text: "E-posta güncellenemedi." })
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-base text-muted-foreground">
+        <Loader2 className="size-4 animate-spin" /> Yükleniyor...
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 rounded-lg border bg-muted p-3">
+        <Mail className="size-5 text-muted-foreground" />
+        <div className="flex-1">
+          <p className="text-base font-medium">{email}</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {emailVerified ? (
+            <>
+              <CheckCircle2 className="size-4 text-success" />
+              <span className="text-sm font-medium text-success">Doğrulandı</span>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="size-4 text-warning" />
+              <span className="text-sm font-medium text-warning">Doğrulanmadı</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {!emailVerified && (
+        <Button variant="outline" size="lg" className="h-12 text-base" onClick={handleResend} disabled={sending}>
+          {sending ? <><Loader2 className="size-4 animate-spin" /> Gönderiliyor...</> : "Doğrulama E-postası Gönder"}
+        </Button>
+      )}
+
+      <form onSubmit={handleUpdateEmail} className="space-y-3">
+        <Label htmlFor="new-email" className="text-base">E-posta Adresini Değiştir</Label>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Input
+            id="new-email"
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="yeni@eposta.com"
+            className="h-12 text-base"
+          />
+          <Button type="submit" size="lg" className="h-12 text-base" disabled={updating || !newEmail}>
+            {updating ? <><Loader2 className="size-4 animate-spin" /> Güncelleniyor...</> : "Güncelle"}
+          </Button>
+        </div>
+      </form>
+
+      {message && <StatusAlert message={message.text} variant={message.type} />}
+    </div>
+  )
+}
 
 export function ChangePasswordForm() {
   const router = useRouter()

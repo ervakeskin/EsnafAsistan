@@ -51,7 +51,7 @@ export async function callGeminiAI(
 ): Promise<string> {
   const systemPrompt = SYSTEM_PROMPT(context)
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
 
   // Sistem promptunu ilk sıraya user mesajı olarak ekle (system_instruction yerine)
   // Bu yaklaşım tüm Gemini versiyonlarında çalışır
@@ -109,7 +109,7 @@ export async function suggestCategory(
   productName: string,
   apiKey: string,
 ): Promise<string> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`
 
   const body = {
     contents: [

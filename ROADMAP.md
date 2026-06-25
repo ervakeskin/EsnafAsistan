@@ -79,27 +79,80 @@
 
 ---
 
-## 🤖 Sprint AI — Yapay Zeka Özellikleri
+## ✅ Sprint AI — Yapay Zeka Özellikleri (Tamamlandı)
 
 ### Akıllı Esnaf Asistanı (Chatbot)
-- [ ] **AI Chat Arayüzü:** Üst menüde "Yardım / AI Önerisi" butonuna basınca sağdan açılan (Drawer) sohbet penceresi
-- [ ] **Hazır Soru Çipleri (Suggestion Chips):** Tek tıkla sorulabilen hazır butonlar
-- [ ] **RAG (Veri Bağlamı) Altyapısı:** Supabase'den güncel stok/fiyat/teslimat verilerini AI'a sistem promptu olarak gönderme
-- [ ] **Tedarik ve Fiyat Danışmanlığı:** Geçmiş alış fiyatlarına göre tavsiye
+- [x] **AI Chat Arayüzü:** Sidebar altında "AI Asistan" butonuna basınca sağdan açılan sohbet drawer'ı (`components/dashboard/ai-chat.tsx`)
+- [x] **Hazır Soru Çipleri (Suggestion Chips):** İlk açılışta 6 adet hazır soru butonu (stok, kasa, teslimat odaklı)
+- [x] **RAG (Veri Bağlamı) Altyapısı:** Supabase'den stok/kasa/teslimat verileri paralel çekilerek Gemini'ye sistem promptu olarak gönderiliyor (`app/api/ai/chat/route.ts`)
+- [x] **Tedarik ve Fiyat Danışmanlığı:** Gemini 2.0 Flash, depo değeri ve kritik stok verilerine göre öneri yapıyor
+- [x] **Gemini AI altyapısı:** `lib/ai.ts` — RAG context builder, Gemini 2.0 Flash entegrasyonu
+- [x] **Otomatik kategorizasyon:** `suggestCategory()` fonksiyonu — ürün adından kategori önerisi
+- [x] **Auth koruması:** AI endpoint'i sadece oturum açmış kullanıcılara açık
+- [x] **GEMINI_API_KEY** ortam değişkeni `.env.local` ve `.env.example`'a eklendi
 
 ### Anlık AI Asistanı
-- [ ] **Doğal dil sorgusu** — "Bu ay en çok ne sattım?" yaz → AI rapor hazırlasın
-- [ ] **Akıllı stok uyarısı** — geçmiş satışa göre stok bitme tahmini
-- [ ] **Otomatik kategorizasyon** — ürün adına göre kategori önerme
-- [ ] **OCR akıllı düzeltme** — düşük güvenilirlikli OCR sonuçlarını AI ile düzeltme
-- [ ] **Fiyat analizi** — "Bu ürünün alış fiyatı geçen aya göre %15 artmış" uyarısı
+- [x] **Doğal dil sorgusu** — "Bu ay en çok ne sattım?" yaz → AI stok/satış verisine bakarak cevap üretiyor
+- [x] **Akıllı stok uyarısı** — Sistem promptunda kritik stok ürünleri AI'a iletiliyor, doğal dil uyarısı yapabiliyor
+- [x] **Otomatik kategorizasyon** — `lib/ai.ts:suggestCategory()` hazır, OCR akışına entegre edilebilir
+- [ ] **OCR akıllı düzeltme** — düşük güvenilirlikli OCR sonuçlarını AI ile düzeltme *(sonraki sprint)*
+- [ ] **Fiyat analizi push bildirimi** — "Bu ürünün alış fiyatı geçen aya göre %15 artmış" otomatik uyarı *(sonraki sprint)*
+
+---
+
+## 🚀 Sprint v2 — Keşfedilen Geliştirme Alanları
+
+> Mevcut kod tabanı analiz edilerek tespit edilmiş, uygulanmamış veya eksik özellikler.
+
+### 🎨 UI/UX İyileştirmeleri
+- [ ] **Mobil AI Chat:** Bottom navigation'a AI butonu ekle (mobilde sidebar görünmüyor)
+- [ ] **Dashboard boş durum ekranları:** Hiç veri yokken yönlendirici "Başlangıç" kartları
+- [ ] **Skeleton loading:** Sayfa yüklenirken iskelet animasyonu (şu an `loading.tsx` çok basit)
+- [ ] **Inline hata mesajları:** Form doğrulama hatalarını alan altında göster
+- [ ] **Konfeti/animasyon:** İlk satış, ilk teslimat tamamlama gibi milestone kutlamaları
+- [ ] **Onboarding flow geliştirme:** `welcome-wizard.tsx` mevcut ama daha interaktif yapılabilir
+
+### 📊 Raporlama & Analitik
+- [ ] **Grafik/Chart bileşeni:** Kasa ve stok verisi için görsel grafik (Chart.js veya Recharts)
+- [ ] **Haftalık özet e-postası:** Her Pazartesi Resend ile otomatik haftalık rapor gönderimi
+- [ ] **CSV/Excel dışa aktarım:** Stok, kasa ve raporlar sayfasından veri indirme
+- [ ] **Kar marjı takibi:** Alış-satış farkı otomatik hesabı ve trend gösterimi
+- [ ] **Müşteri bazlı satış raporu:** Hangi müşteri ne kadar harcadı?
+
+### 🔔 Bildirimler & Otomasyon
+- [ ] **Stok bitince otomatik WhatsApp:** Kritik stoğa düşünce tedarikçiye WhatsApp mesajı
+- [ ] **Doğum günü hatırlatıcı:** Müşteri doğum günlerinde otomatik mesaj
+- [ ] **Vadesi gelen borç bildirimi:** Müşteri cari'de vadesi geçen borçlar için push bildirim
+- [ ] **Günlük kasa özeti push bildirimi:** Her gece 20:00'de günlük kasa özeti bildirimi
+
+### 🏗️ Teknik Altyapı
+- [ ] **API rate limiting geliştirme:** AI endpoint için ayrı rate limiting (şu an sadece auth'da var)
+- [ ] **OCR + AI pipeline:** Tesseract.js sonucunu doğrudan Gemini'ye düzeltme için gönder
+- [ ] **Offline AI önbellekleme:** Son AI yanıtlarını IndexedDB'ye kaydet, internet olmadığında göster
+- [ ] **Supabase Realtime AI tetikleyici:** Kritik stok oluşunca otomatik AI analizi çalıştır
+- [ ] **Çoklu dil desteği (i18n):** Kürtçe, Arapça arayüz seçeneği (göçmen esnaf için)
+- [ ] **Vercel Analytics entegrasyonu:** Kullanıcı davranışı takibi (`@vercel/analytics` hazır ama aktif değil)
+
+### 🔐 Güvenlik & Uyumluluk
+- [ ] **2FA (İki faktörlü doğrulama):** TOTP veya SMS ile ekstra güvenlik katmanı
+- [ ] **KVKK veri dışa aktarım:** Kullanıcının tüm verisini JSON olarak indirme (GDPR portability)
+- [ ] **IP bazlı oturum takibi:** Farklı şehirden giriş uyarısı
+- [ ] **Supabase Row Level Security testi:** Otomatik RLS politika testi
+- [ ] **API güvenlik başlıkları auditi:** OWASP top 10 kontrol listesi
+
+### 💼 İş Geliştirme
+- [ ] **Çoklu şube desteği:** Birden fazla dükkan/şube yönetimi
+- [ ] **Tedarikçi sipariş formu:** Tedarikçiye PDF/WhatsApp ile sipariş formu gönderme
+- [ ] **Sadakat programı:** Müşteri puan sistemi entegrasyonu
+- [ ] **Fatura şablonları:** Özelleştirilebilir e-fatura/fiş tasarımı
 
 ---
 
 ## ✅ Canlıya Çıkış — Yapılacaklar Kontrol Listesi
 
 ### 1. Ortam Değişkenleri (`.env.local` / Vercel Environment Variables)
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` — Supabase Dashboard > Settings > API > service_role key (tablo: `service_role`)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` — Supabase Dashboard > Settings > API > service_role key
+- [ ] `GEMINI_API_KEY` — [Google AI Studio](https://aistudio.google.com/app/apikey) ücretsiz API key
 
 ### 2. DNS & Domain
 - [ ] `mail.esnafasistan.com` domain'i için MX kaydını Resend inbound sunucularına yönlendir
@@ -114,7 +167,7 @@
 ### 4. Vercel Deploy
 - [ ] GitHub repo'ya push
 - [ ] Vercel'de projeyi import et
-- [ ] Tüm environment variables'ı Vercel Dashboard'a ekle
+- [ ] Tüm environment variables'ı Vercel Dashboard'a ekle (`SUPABASE_*`, `GEMINI_API_KEY`, `INBOUND_*`)
 - [ ] Deploy et ve domain ayarla
 
 ### 5. Canlı Test
@@ -125,6 +178,7 @@
 - [ ] Raporlar sayfası veri gösteriyor mu?
 - [ ] Hatırlatıcı ekleme/silme çalışıyor mu?
 - [ ] Ayarlar (dükkan adı, depolar, yönlendirme adresi) çalışıyor mu?
+- [ ] **AI Asistan açılıyor ve yanıt veriyor mu? (GEMINI_API_KEY ayarlandıktan sonra)**
 - [ ] Webhook test: Resend'den test maili gönder, `/api/webhooks/resend` log'larını kontrol et
 - [ ] Koyu tema / açık tema geçişi çalışıyor mu?
 
@@ -133,3 +187,8 @@
 - [ ] Sentry hata izleme kurulumu
 - [ ] Supabase günlük yedekleme
 - [ ] `npm audit` ile bağımlılık güvenlik taraması
+
+
+
+---
+
